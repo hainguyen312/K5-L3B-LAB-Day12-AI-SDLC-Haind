@@ -1,0 +1,3 @@
+{"quan":{"stock":[{"id":"I1","kind":"ca_loc","fresh":80},{"id":"I2","kind":"bong_sung","fresh":70},{"id":"I3","kind":"bong_sung","fresh":66},{"id":"I4","kind":"ca_linh","fresh":20}],
+ "customers":[{"id":"C1","table_id":"T2","dish_id":"ca_loc_nuong_trui","patience_ticks_left":700},{"id":"C2","table_id":"T3","dish_id":"goi_bong_sung","patience_ticks_left":3000}],
+ "random_customers":false}}

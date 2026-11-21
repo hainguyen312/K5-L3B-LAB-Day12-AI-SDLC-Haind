@@ -1,0 +1,17 @@
+# clone sạch từ GitHub — 2026-11-21 19:59:42 — Python 3.12.0 — Darwin arm64
+$ git clone https://github.com/hainguyen312/K5-L3B-LAB-Day12-AI-SDLC-Haind
+$ cd K5-L3B-LAB-Day12-AI-SDLC-Haind
+commit: 3c77cef
+$ python3 -m chonoi.live   (chạy nền, cổng 8766 để không đụng máy chủ khác) + GET /state
+state: day gather day 1 màn hình menu | index.html 30451 byte
+Mở trình duyệt tại http://127.0.0.1:8766/  (chế độ day, seed 1). Ctrl+C để dừng.
+$ PYTHONPATH=tests:. python3 -m unittest discover -s tests
+Ran 125 tests in 18.555s
+
+OK (skipped=1)
+$ python3 -m chonoi.headless --mode day --seed 1 --ticks 22200 --out out.jsonl
+{"type":"end","ticks":22200,"sim_tick":22200,"mode":"day","state":"finished","reason":"days_complete","money":0,"earned":0,"reputation":3.0,"score":300,"days_completed":1}
+$ python3 -m chonoi.soak --seed 7 --days 10 --out soak.json
+{"days": 10, "days_completed": 10, "crashes": 0, "duration_s": 4.602}
+$ python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json
+{"avg_fps": 60.0, "p1_low_fps": 59.52, "frames": 1801, "measured_s": 30.015, "load_ms": 716}
