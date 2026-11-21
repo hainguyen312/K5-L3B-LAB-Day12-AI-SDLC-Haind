@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## phase-3 — Ticket-03 "Mùa Nước Nổi" (Test Contract v1.2)
+### ⚠ BREAKING CHANGE — kho cá thể có độ tươi
+- File kho / `gather_end.inventory`: `{"items": {"ca_loc": 1}}` → `{"items": [{"id": "I1", "kind": "ca_loc", "fresh": 99.99}]}` (sắp theo id). **Kho đếm giờ trả mã 2.**
+- Scenario: `gather.hold` và `quan.stock` là mảng cá thể `{id, kind, fresh}`; `customers[].reserved` là mảng id cá thể.
+- JSONL: `hold`, `stock` (quán, Shop) là mảng cá thể; `cook_started.items`, `lost` là mảng cá thể; event mới `spoiled`.
+- Giá món chốt theo độ tươi: `floor(giá niêm yết × TB fresh / 100)`; boa tính trên giá đã chốt.
+### Cách cập nhật fixture
+- `"hold": ["ca_loc", "bong_sung"]` → `"hold": [{"id": "I1", "kind": "ca_loc", "fresh": 100}, {"id": "I2", "kind": "bong_sung", "fresh": 100}]` (trong test dùng `helpers.items("ca_loc", "bong_sung")`).
+- `"stock": {"bong_sung": 2}` → mảng cá thể (`helpers.stock(bong_sung=2)` → I1, I2 fresh 100).
+- `"reserved": {"bong_sung": 2}` → `"reserved": ["I1", "I2"]`; đơn không có món: `"reserved": []`.
+- So kho: so `id`/`kind` chính xác, `fresh` với dung sai ±0.01 (hoặc so nguyên mảng với file vừa ghi).
+### Added
+- `chonoi/items.py` (cá thể, độ tươi chính xác bằng phân số), hao 0.5/s giỏ, 0.25/s kho quán, ngưỡng ươn 30, giữ lại khi hàng vừa ươn, `unfulfillable`.
+- HUD độ tươi (thanh từng ô giỏ, ✗ hàng ươn, "tươi N%" trong kho quán/Shop).
+- `tests/test_rules_p3.py` (20 test), `verify-phase 3` (ca ngưỡng 30, smoke bàn giao file, regression P1–P2).
+
 ## phase-2 — Ticket-02 (Test Contract v1.1)
 ### Added
 - Số chuẩn v1.1: `contract_version 1.1`, N5/N6 (kèo nèo), cá kèo, B2, T2–T4, 6 món, `day_plan` D1–D5, `shop`.
