@@ -25,9 +25,9 @@ Test luật: [`tests/test_rules_p1.py`](../../tests/test_rules_p1.py) — tên l
 | AC-P1-18 F: phục vụ đúng tick kiên nhẫn về 0 hợp lệ; sai đơn bỏ lượt; khách rời bỏ món, không hoàn nguyên liệu | `test_serve_on_patience_zero_tick_is_valid`, `test_wrong_order_in_hand_not_served`, `test_customer_leaving_discards_dish_no_refund`, `test_ready_ticks_increase_while_on_stove` | [verify.txt](../proof/phase-1/verify.txt) | đạt |
 | AC-P1-19 F/E: hết ca: khách ăn trả `closing`, khách chờ rời không trừ uy tín, `quan_end`; ví dụ `end` của PRD (72 / 3.2 / 372) | `QuanClosing.*` | [verify.txt](../proof/phase-1/verify.txt) | đạt |
 | AC-P1-20 DoD: HUD đọc được (thời gian, oxy, Máu, giỏ / kho khả dụng, món gọi, kiên nhẫn, bếp, tay, tiền, uy tín) | chơi thử `python3 -m chonoi.live`; `tests/test_live.py` | [verify.txt](../proof/phase-1/verify.txt) | đạt một phần — HUD hình khối của starter + vá kho khả dụng; chưa có đồ họa thật |
-| AC-P1-21 DoD: fork chung, mỗi người ≥ 3 commit, tag `phase-1` trước 1:00 | `git log`, `git tag` | — | **chưa đạt**: chưa commit/push/tag; nhóm 1 người (đề yêu cầu 4–6) |
+| AC-P1-21 DoD: fork chung, mỗi người ≥ 3 commit, tag `phase-1` trước 1:00 | `git log --author`, `git tag` | repo `hainguyen312/K5-L3B-LAB-Day12-AI-SDLC-Haind`, 6 commit P1 của hainguyen312, tag `phase-1` | đạt một phần: đủ commit + tag; **nhóm 1 người** (đề yêu cầu 4–6); tag gắn muộn so với mốc 1:00 của lab |
 
 ## Đánh giá ngắn
 - **Đạt:** toàn bộ luật lõi PRD-0 mục D–G cho gather và quan; 68 test xanh; tất định byte; smoke 2 tiến trình.
-- **Chưa đạt / rủi ro:** tag + commit chưa có; nhóm 1 người; 5 giả định (#13–#17 trong `docs/clarify.md`) PRD chưa nói rõ; HUD vẫn là hình khối tạm.
+- **Chưa đạt / rủi ro:** nhóm 1 người; 5 giả định (#13–#17 trong `docs/clarify.md`) PRD chưa nói rõ; HUD vẫn là hình khối tạm.
 - **Chỉnh cho phase sau:** luôn dán nguyên văn PRD/ticket vào prompt agent trước khi code (Phase 1 mất công làm lại 6 giả định sai).
