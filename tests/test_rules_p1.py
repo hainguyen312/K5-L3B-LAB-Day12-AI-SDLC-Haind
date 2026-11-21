@@ -120,7 +120,9 @@ class GatherHarvest(unittest.TestCase):
     def test_regrow_event_and_harvest_again(self):
         regrow = int(G["regrow_s"] * 60)
         inp = [{"tick": 0, "interact": True}, {"tick": 1, "interact": False}, {"tick": regrow, "interact": True}]
-        rows, code, err, _ = run("gather", {"player": {"pos": [12, 0]}}, inp, ticks=regrow + 1, every=10000)
+        # v1.1: tắt cá để không lẫn fish_spawned (sinh mỗi 360 tick) vào danh sách sự kiện
+        rows, code, err, _ = run("gather", {"player": {"pos": [12, 0]}, "random_fish": False}, inp, ticks=regrow + 1,
+                                 every=10000)
         self.assertEqual(code, 0, err)
         ev = events(rows)
         self.assertEqual([e["name"] for e in ev], ["gather", "node_regrown", "gather"])
@@ -181,7 +183,9 @@ class GatherCatch(unittest.TestCase):
         cd = int(G["catch_cooldown_s"] * 60)
         for second, want in ((cd - 1, ["F1"]), (cd, ["F1", "F2"])):
             inp = [{"tick": 0, "catch": True}, {"tick": 1, "catch": False}, {"tick": second, "catch": True}]
-            rows, *_ = run("gather", {"player": {"pos": [20, 5]}, "fish": self.FISH}, inp, ticks=second + 1)
+            # v1.1: cá fixture bơi khi random_fish bật -> tắt để giữ đàn đứng yên như P1
+            rows, *_ = run("gather", {"player": {"pos": [20, 5]}, "fish": self.FISH, "random_fish": False}, inp,
+                           ticks=second + 1)
             ev = events(rows, "fish_caught")
             self.assertEqual([e["data"]["fish_id"] for e in ev], want, second)
             if len(ev) == 2:
@@ -250,7 +254,8 @@ class QuanCustomers(unittest.TestCase):
         self.assertEqual([(e["name"], e["data"]) for e in ev], [("no_dish", {})])
 
     def test_no_table_skips_silently(self):
-        cust = [{"id": "C1", "table_id": "T1", "dish_id": "ca_loc_nuong_trui"}]
+        # v1.1: quán có 4 bàn -> phải lấp đủ cả 4 bàn mới thử được "hết bàn"
+        cust = [{"id": f"C{i}", "table_id": tb["id"], "dish_id": "ca_loc_nuong_trui"} for i, tb in enumerate(Q["tables"], 1)]
         rows, code, err, _ = run("quan", {"stock": {"ca_loc": 5}, "customers": cust}, ticks=Q["first_customer_tick"])
         self.assertEqual(code, 0, err)
         self.assertEqual(names(rows), [])
@@ -419,7 +424,7 @@ class QuanFixtures(unittest.TestCase):
             {"hand": "ca_loc_nuong_trui"},
             {"reputation": 9},
             {"customers": [{"id": "C1", "table_id": "T1", "dish_id": "goi_bong_sung", "mood": 1}]},
-            {"stoves": [{"id": "B2"}]},
+            {"stoves": [{"id": "B9"}]},  # v1.1 có B2 thật -> dùng id không tồn tại
         ]
         for block in bad:
             _, code, _, _ = run("quan", block, ticks=0)

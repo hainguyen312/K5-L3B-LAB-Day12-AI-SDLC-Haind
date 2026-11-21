@@ -39,6 +39,44 @@ python3 -m chonoi.headless --mode quan --seed 42 --ticks 10800 --inventory "$OUT
 echo "## integration: kho.json = $(cat "$OUT/kho.json")" >> "$OUT/verify.txt"
 echo "## quan end: $(tail -n 1 "$OUT/quan-from-kho.jsonl")" >> "$OUT/verify.txt"
 
+if [ "$PHASE" -ge 2 ]; then
+  # Ticket-02 phút 20: smoke tích hợp gather --inventory-out -> quan --inventory, lưu integration.*
+  cp "$OUT/kho.json" "$OUT/integration-kho.json" && mv "$OUT/gather-dock.jsonl" "$OUT/integration-gather.jsonl" \
+    && mv "$OUT/quan-from-kho.jsonl" "$OUT/integration-quan.jsonl" && rm -f "$OUT/kho.json"
+  python3 - "$OUT/integration-quan.jsonl" >> "$OUT/verify.txt" <<'PY' || status=1
+import json, sys
+rows = [json.loads(l) for l in open(sys.argv[1])]
+s0 = [r for r in rows if r["type"] == "snapshot"][0]
+ok = s0["tick"] == 0 and s0["stock"] == {"bong_sung": 2, "ca_loc": 1}
+print("## integration tick-0 stock:", s0["stock"], "OK" if ok else "FAIL")
+sys.exit(0 if ok else 1)
+PY
+  # smoke day --days 1 (thời gian chạy <= 20 s)
+  t0=$(python3 -c 'import time;print(time.time())')
+  python3 -m chonoi.headless --mode day --seed 7 --days 1 --ticks 30000 --snapshot-every 600 --out "$OUT/day-1.jsonl" || status=1
+  t1=$(python3 -c 'import time;print(time.time())')
+  echo "## day --days 1: $(tail -n 1 "$OUT/day-1.jsonl")" >> "$OUT/verify.txt"
+  echo "## day --days 1 thời gian: $(python3 -c "print(round($t1-$t0,2))") s (yêu cầu <= 20 s)" >> "$OUT/verify.txt"
+  # nhiều Ngày: cập bến ngay, mua Bình oxy trong Shop Ngày 1, kiểm cấp áp dụng ở Ngày 2
+  echo '{"day":{"money":200,"earned":200},"gather":{"hold":["ca_loc","bong_sung","bong_sung"],"random_fish":false}}' > "$TMP/d.json"
+  echo '{"frames":[{"tick":0,"interact":true},{"tick":1,"interact":false},{"tick":10801,"buy":"oxygen"},{"tick":10802,"shop_done":true}]}' > "$TMP/di.json"
+  python3 -m chonoi.headless --mode day --seed 7 --days 2 --scenario "$TMP/d.json" --inputs "$TMP/di.json" --ticks 40000 \
+    --snapshot-every 1000 --out "$OUT/days-2-upgrade.jsonl" || status=1
+  python3 - "$OUT/days-2-upgrade.jsonl" >> "$OUT/verify.txt" <<'PY' || status=1
+import json, sys
+rows = [json.loads(l) for l in open(sys.argv[1])]
+ev = {r["name"]: r for r in rows if r["type"] == "event" and r["name"] in ("bought", "shop_end")}
+d2 = [r for r in rows if r["type"] == "snapshot" and r.get("day") == 2 and r["phase"] == "gather"][0]
+ok = ev["bought"]["data"]["level"] == 1 and d2["active_upgrades"] == {"oxygen": 1} and d2["player"]["oxygen_max_ticks"] == 2700
+print("## days 2: bought", ev["bought"]["data"], "| Ngày 2 active", d2["active_upgrades"], "oxygen_max_ticks",
+      d2["player"]["oxygen_max_ticks"], "| end", rows[-1]["reason"], rows[-1]["days_completed"], "OK" if ok else "FAIL")
+sys.exit(0 if ok else 1)
+PY
+  # regression P1 với số chuẩn
+  PYTHONPATH=tests:. python3 -m unittest tests.test_smoke_p1 tests.test_rules_p1 >> "$OUT/regression-p1.txt" 2>&1 || status=1
+  echo "## regression P1: $(tail -n 1 "$OUT/regression-p1.txt")" >> "$OUT/verify.txt"
+fi
+
 [ $status -eq 0 ] && echo "## RESULT: PASS" >> "$OUT/verify.txt" || echo "## RESULT: FAIL" >> "$OUT/verify.txt"
 tail -n 6 "$OUT/verify.txt"
 exit $status
