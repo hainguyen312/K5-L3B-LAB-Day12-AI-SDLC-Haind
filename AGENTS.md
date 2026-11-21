@@ -6,10 +6,14 @@
 - Test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
 - Headless: `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl`
 - Chơi thử trên trình duyệt: `python3 -m chonoi.live --mode gather|quan` (mở địa chỉ in ra; WASD, E, Space, R)
+- Test luật của nhóm: `PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p1 -v`
+- Kiểm chứng + bằng chứng trước khi gắn tag: `bash .agents/skills/verify-phase/verify.sh <N>`
 
 ## Cấu trúc & quy ước
 - (Starter Python là TÙY CHỌN; nhóm có thể dùng ngôn ngữ khác nếu giữ Test Contract.) Khung do giảng viên cấp: `chonoi/{headless,inputs,scenario,contract,rng,ids,jsonl,inventory,runner,live}.py` và `chonoi/web/`. Hạn chế sửa; nếu phải sửa thì báo cả nhóm và ghi lại lý do.
-- Luật chơi của nhóm: `chonoi/sim/gather.py`, `chonoi/sim/quan.py` (tìm `TODO(nhóm)`).
+- Luật chơi của nhóm: `chonoi/sim/gather.py`, `chonoi/sim/quan.py` — docstring đầu file ghi THỨ TỰ một bước; giữ đúng thứ tự đó khi sửa.
+- Hành vi theo giả định có comment `giả định: clarify #n` → đọc `docs/clarify.md` trước khi đổi.
+- Test luật: `tests/test_rules_p1.py` (hộp đen qua headless, dùng `run(mode, block, inputs, ticks)`).
 - **Số liệu chỉ đọc từ `game.contract.json` / dữ liệu**, không hard-code trong luật.
 - Mọi số ngẫu nhiên đi qua `Streams` (`chonoi/rng.py`); không dùng `random` toàn cục, không dùng đồng hồ hệ thống.
 - Sắp danh sách thực thể bằng `ids.sort_by_id`; cấp id bằng `IdAllocator`.
@@ -26,4 +30,9 @@
 - Sáng tạo thêm được khuyến khích nhưng phải tắt ở headless (xem README, mục "Tự do sáng tạo").
 
 ## Skills / hooks của nhóm
-- (Ghi tên và khi nào dùng; tối thiểu 2 skill/hook/command nhóm tự viết, đặt ở `.agents/skills/` hoặc tương đương.)
+- `verify-phase` (`.agents/skills/verify-phase/`): chạy unittest + so byte tất định 2 mode + luồng gather→kho→quan, ghi `docs/proof/phase-N/`. Dùng sau mỗi lần sửa luật và BẮT BUỘC trước khi gắn tag.
+- `clarify-log` (`.agents/skills/clarify-log/`): gặp chỗ PRD mơ hồ → ghi câu hỏi + GIẢ ĐỊNH vào `docs/clarify.md`, comment `giả định: clarify #n` trong code, viết test khóa hành vi. Không đoán ngầm.
+
+## Bài học từ Phase 1 (cập nhật theo phase)
+- Agent không đọc được PRD trên lab board → luôn dán nguyên văn phase vào prompt. Phase 1: agent tự đoán 11 luật, 6 luật sai, phải làm lại.
+- Agent hay tự thêm sự kiện/trường ngoài PRD → mọi sự kiện mới phải có trong `docs/contracts/README.md`.
