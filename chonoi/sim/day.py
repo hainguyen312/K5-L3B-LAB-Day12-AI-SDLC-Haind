@@ -9,6 +9,7 @@ một Ngày không pause dài tối đa 10.800 + 10.800 + 600 = 22.200 tick.
   quan_end -> dựng Shop (kho dư) -> phase_start(shop)
   shop_end -> days_completed + 1 -> dựng Ngày kế (sao upgrades -> active_upgrades) hoặc kết thúc days_complete
 Tiền, earned, uy tín, cấp nâng cấp giữ qua Ngày; oxy/Máu theo cấp đang áp dụng; giỏ làm mới; kho dư bỏ sau Shop.
+v1.2: bàn giao cá thể (id, kind, fresh) trong cùng tick chuyển pha, không hao thêm; Shop không hao tươi.
 Sự kiện trả về dạng (name, data, phase, day): sự kiện kết thúc mang pha cũ, phase_start mang pha mới.
 """
 
@@ -79,7 +80,11 @@ class DaySim:
         ctx = {"money": self.money, "earned": self.earned, "reputation": self.reputation,
                "oxygen_max_s": self._level("oxygen", "oxygen_max_s", g["oxygen_max_s"]),
                "hp_max": self._level("hp", "hp_max", g["hp_max"])}
-        self.sub = GatherSim(self.tuning, self.templates["gather"], self.streams, self.ids, day=self.day, ctx=ctx)
+        tpl = self.templates["gather"]
+        if self.day > 1 and tpl.get("hold"):
+            # v1.2: Ngày đầu giữ nguyên id của mẫu; các Ngày kế cấp id mới theo thứ tự mảng, giữ kind/fresh ban đầu
+            tpl = dict(tpl, hold=[{"id": self.ids.new("I"), "kind": it["kind"], "fresh": it["fresh"]} for it in tpl["hold"]])
+        self.sub = GatherSim(self.tuning, tpl, self.streams, self.ids, day=self.day, ctx=ctx)
         return [("day_start", {}, "gather", self.day), ("day_plan", self.plan_today(), "gather", self.day),
                 ("phase_start", {}, "gather", self.day)]
 

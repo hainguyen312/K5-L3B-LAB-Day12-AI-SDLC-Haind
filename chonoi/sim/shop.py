@@ -7,6 +7,9 @@ Trừ vào money, giữ earned/điểm. Cấp vừa mua ghi vào `upgrades` ngay
 Lệnh không hỗ trợ (kể cả weapon/net/buy:/sell: của mở rộng nhóm chưa bật) -> buy_failed(unknown).
 """
 
+from .. import items as itm
+from ..ids import sort_by_id
+
 SUPPORTED = ("oxygen", "hp")
 
 
@@ -20,12 +23,12 @@ class ShopSim:
         self.time_left_ticks = int(self.shop["max_ticks"])
         self.money, self.earned, self.reputation = money, earned, reputation
         self.upgrades = dict(upgrades)
-        self.stock = {k: v for k, v in sorted(stock.items()) if v > 0}  # kho dư từ ca, bỏ sau Shop
+        self.stock = sort_by_id([dict(it) for it in stock])  # kho dư cá thể từ ca, không hao ở Shop, bỏ sau Shop
         self.done = False
         self.reason = None
 
     def snapshot(self) -> dict:
-        return {"stock": dict(self.stock)}
+        return {"stock": itm.out_list(self.stock)}
 
     def step(self, inp):
         events = []
