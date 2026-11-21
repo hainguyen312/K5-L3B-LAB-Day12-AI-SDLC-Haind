@@ -16,6 +16,8 @@ Thứ tự MỘT bước:
   5. còn giờ: lượt khách ở first_customer_tick rồi mỗi customer_interval_s*60 (theo phase_tick); hết bàn -> bỏ lượt;
      bàn trống id nhỏ nhất; chọn đều theo seed trong các món đủ nguyên liệu khả dụng (tồn - giữ chỗ) -> giữ chỗ,
      `customer_arrived`; không món -> `no_dish`.
+Chế độ day (Ticket-02 mục 2, 4.5): tiền/earned/uy tín nối từ Ngày trước; khách chọn trong các món CỦA KẾ HOẠCH
+Ngày (lọc theo id món trước khi lọc nguyên liệu khả dụng); quán chạy riêng dùng cả 6 món.
 Số liệu chỉ đọc từ game.contract.json; ngẫu nhiên chỉ qua luồng RNG `customer_dish`.
 """
 
@@ -46,7 +48,9 @@ class QuanSim:
     mode = "quan"
     phase = "quan"
 
-    def __init__(self, tuning, scenario, streams, ids, inventory=None):
+    def __init__(self, tuning, scenario, streams, ids, inventory=None, ctx=None):
+        """`ctx` (chế độ day): money, earned, reputation, dishes (id món của kế hoạch Ngày)."""
+        ctx = ctx or {}
         t = tuning["quan"]
         self.t = t
         self.menu = tuning["menu"]
@@ -65,7 +69,8 @@ class QuanSim:
         self.time_left_ticks = scenario.get("time_left_ticks", self.duration_ticks)
         self.phase_tick = 0
         self.rep_min, self.rep_max = t["reputation_min"], t["reputation_max"]
-        self.reputation = scenario.get("reputation", t["reputation_initial"])
+        self.reputation = scenario.get("reputation", ctx.get("reputation", t["reputation_initial"]))
+        self.dishes = sorted(ctx["dishes"]) if ctx.get("dishes") else sorted(self.menu)
         if not (isinstance(self.reputation, (int, float)) and not isinstance(self.reputation, bool)
                 and math.isfinite(self.reputation) and self.rep_min <= self.reputation <= self.rep_max):
             raise BadInput("reputation phải là số trong [reputation_min, reputation_max]")
@@ -76,11 +81,14 @@ class QuanSim:
         self.stoves = [self._load_stove(s) for s in self._merge(t["stoves"], scenario.get("stoves", []), STOVE_KEYS)]
         self.hand = self._load_payload("hand", scenario.get("hand"))
         self.customers = self._load_customers(scenario.get("customers", []))
+        for c in self.customers:
+            if c["dish_id"] not in self.dishes:
+                raise BadInput(f"customers.{c['id']}: món {c['dish_id']} không thuộc kế hoạch Ngày")
         self._validate_links()
         for e in self.customers:
             ids.reserve(e["id"])
-        self.money = 0
-        self.earned = 0
+        self.money = ctx.get("money", 0)
+        self.earned = ctx.get("earned", 0)
         self.shift_earned = 0
         self.done = False
         self.reason = None
@@ -397,8 +405,8 @@ class QuanSim:
         if not free_tables:
             return
         avail = self._available()
-        cookable = sorted(d for d, m in self.menu.items()
-                          if all(avail.get(k, 0) >= v for k, v in m["recipe"].items()))
+        cookable = [d for d in self.dishes  # lọc theo kế hoạch trước, rồi nguyên liệu khả dụng
+                    if all(avail.get(k, 0) >= v for k, v in self.menu[d]["recipe"].items())]
         if not cookable:
             events.append(("no_dish", {}))
             return
