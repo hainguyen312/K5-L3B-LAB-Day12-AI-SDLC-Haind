@@ -1,5 +1,5 @@
 """Đọc game.contract.json và kiểm dải hợp lệ của tuning (Test Contract v1.2: PRD-0 mục A, Ticket-02 mục 4.1,
-Ticket-03 "Contract v1.2" — khối freshness)."""
+Ticket-03 "Contract v1.2" — khối freshness; v1.3 (Ticket-04): khai bench_cmd, soak_cmd, gameplay giữ nguyên v1.2)."""
 
 import json
 import os
@@ -28,8 +28,11 @@ def load_contract(path=DEFAULT_PATH) -> dict:
             c = json.load(f)
     except (OSError, ValueError) as e:
         raise BadInput(f"không đọc được {path}: {e}")
-    if c.get("contract_version") != "1.2":
-        raise BadInput("contract_version phải là \"1.2\"")
+    if c.get("contract_version") != "1.3":
+        raise BadInput("contract_version phải là \"1.3\"")
+    for k in ("build_cmd", "run_cmd", "headless_cmd", "bench_cmd", "soak_cmd"):  # v1.3 (Ticket-04)
+        if not isinstance(c.get(k), str) or not c[k]:
+            raise BadInput(f"game.contract.json thiếu lệnh {k}")
     validate_tuning(c.get("tuning"))
     return c
 

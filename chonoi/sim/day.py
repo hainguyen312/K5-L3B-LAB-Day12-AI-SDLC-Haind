@@ -58,7 +58,7 @@ class DaySim:
         self.money, self.earned, self.reputation = self.sub.money, self.sub.earned, self.sub.reputation
 
     def plan_today(self) -> dict:
-        p = self.plan[self.day - 1]
+        p = self.plan[(self.day - 1) % len(self.plan)]  # soak > 5 Ngày: D1–D5 lặp lại (Ticket-04 mục 2)
         return {"dishes": dict(p["dishes"]), "ingredients": dict(p["ingredients"])}
 
     def snapshot(self) -> dict:
