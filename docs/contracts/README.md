@@ -36,3 +36,23 @@
 | quan | `quan_end` | `reason: "time", money, earned, shift_earned, reputation` | sim/quan |
 
 Người nghe: UI (nhật ký sự kiện, HUD) và test (`tests/test_rules_p1.py`). Đổi hợp đồng: ghi ADR trong `docs/adr/`.
+
+## 4. Thay đổi v1.1 (Ticket-02, chốt đầu Phase 2)
+- **Kho:** thêm `ca_keo`, `keo_neo` (6 nguyên liệu). Schema `{"items": {...}}` giữ nguyên; `day` bàn giao trong bộ nhớ theo đúng schema này.
+- **CLI:** `--mode day`, `--days 1..5` (chỉ với day). `--inventory`/`--inventory-out` vẫn chỉ cho quan/gather độc lập.
+- **Inputs:** nút `pause`, `shop_done`, `attack`, `photo` (2 nút cuối bị bỏ qua vì nhóm chưa bật mở rộng); `buy` là chuỗi, chỉ ở đúng frame.
+- **Snapshot:** `state` thêm `paused`; gather thêm `monsters[]`, `fish[].age_ticks`; chế độ day thêm `day`, `day_plan`, `upgrades`, `active_upgrades`, pha `shop` có `stock` dư + `time_left_ticks`. `tick` (bước ngoài) ≠ `sim_tick` (gameplay) khi có pause; `phase_tick` về 0 khi đổi pha.
+- **Giao diện sim nội bộ:** mỗi pha là một sim (`GatherSim`, `QuanSim`, `ShopSim`) có `step(inp) -> [(name, data)]`, `snapshot()`, `done`, `reason`, `phase_tick`, `time_left_ticks`, `money`, `earned`, `reputation`. `DaySim` (`chonoi/sim/day.py`) điều phối và trả sự kiện dạng `(name, data, phase, day)`.
+- **UI ↔ sim:** cửa sổ chơi đọc thêm `ui {screen, elapsed, stats}` (chỉ có ở `chonoi.live`, không có trong JSONL) và gửi `/continue`, `/quit`, `buy`.
+
+| Mode | Sự kiện mới v1.1 | `data` |
+|---|---|---|
+| gather | `monster_hit` | `monster_id, hp, lost` (mảng kind LIFO), `pos` (người chơi) |
+| gather | `fish_spawned` | `id, kind, pos` |
+| gather | `faint` | thêm `cause: "monster"` |
+| day | `day_start`, `phase_start` | `{}` |
+| day | `day_plan` | `dishes, ingredients` |
+| mọi mode | `paused`, `resumed` | `{}` |
+| shop | `bought` | `upgrade, level, price, money` |
+| shop | `buy_failed` | `action, reason: funds|max_level|unknown` |
+| shop | `shop_end` | `reason: done|time` |
