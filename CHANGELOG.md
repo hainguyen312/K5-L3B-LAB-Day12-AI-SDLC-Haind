@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## v1.0.0 / phase-4 — Ticket-04 Phát hành (Test Contract v1.3)
+### Added
+- `contract_version 1.3`, `bench_cmd` (`python3 -m chonoi.bench`), `soak_cmd` (`python3 -m chonoi.soak`) ở gốc manifest; gameplay/tuning/kho/JSONL giữ nguyên v1.2.
+- Benchmark có render: server chơi thử + Chrome headless 1280×720, `?bench=1` đo requestAnimationFrame (làm nóng 3 s), xuất `avg_fps, p1_low_fps, frames, measured_s, load_ms`.
+- Soak headless N Ngày bằng bot tất định; kế hoạch D1–D5 lặp ở Ngày 6–10; `soak.json {days, days_completed, crashes, results, duration_s}`.
+- Cảnh báo chữ + biểu tượng: ⚠ Thủy quái gần, ⚠ Oxy sắp hết (< 25%), 😠 Khách sắp giận (kiên nhẫn < 25%); chế độ tương phản cao (H / `?contrast=1`).
+- `tools/screenshot.py` (ảnh canvas qua Chrome headless) — bằng chứng HUD ở `docs/proof/phase-4/`.
+- README v1.0.0 (yêu cầu môi trường, ≤ 3 lệnh, điều khiển, lệnh test/headless/bench/soak), `CREDITS.md`, `LICENSE`, `docs/release-notes-v1.0.0.md`.
+- `tests/test_p4.py`; `verify-phase 4` (bench, soak x2, regression P1–P3).
+### Fixed
+- Nhãn thanh oxy khó đọc trên nền tối; hộp cảnh báo che người chơi giữa màn hình (phát hiện khi xem ảnh chụp).
+
 ## phase-3 — Ticket-03 "Mùa Nước Nổi" (Test Contract v1.2)
 ### ⚠ BREAKING CHANGE — kho cá thể có độ tươi
 - File kho / `gather_end.inventory`: `{"items": {"ca_loc": 1}}` → `{"items": [{"id": "I1", "kind": "ca_loc", "fresh": 99.99}]}` (sắp theo id). **Kho đếm giờ trả mã 2.**

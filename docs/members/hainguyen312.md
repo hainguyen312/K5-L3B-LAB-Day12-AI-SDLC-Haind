@@ -1,8 +1,6 @@
 # hainguyen312 — phản tư cá nhân (≤ 200 từ)
 
-- **Tôi đã làm:** toàn bộ Phase 1 (nhóm 1 người): luật `chonoi/sim/gather.py`, `chonoi/sim/quan.py`, test `tests/test_rules_p1.py` (36 test theo PRD), skill `.agents/skills/verify-phase` và `clarify-log`, hợp đồng `docs/contracts/README.md`, bằng chứng `docs/proof/phase-1/`. (Link commit: bổ sung sau khi commit/push lên repo nhóm.)
-- **Tôi đã review:** đọc lại từng diff agent AI viết trước khi nhận; so hành vi với smoke test công khai và docstring khung.
-- **AI sai ở đâu và tôi phát hiện thế nào:** agent không đọc được PRD trên lab board nên tự đoán 11 luật; khi tôi dán PRD vào, đặt từng giả định cạnh câu PRD thì 6 cái sai (boa `round` thay `floor`, khách rời trước interact, bắt trượt tốn hồi chiêu, tự thêm sự kiện `no_table`…). Nhờ đã ghi giả định vào `docs/clarify.md` và khóa bằng test nên sửa nhanh, biết chính xác chỗ cần đổi.
-- **Phase 2:** contract v1.1, cá bơi/sinh, Cá Sấu, `day` + Shop + pause (`chonoi/sim/{gather,day,shop}.py`, `chonoi/runner.py`), cửa sổ chơi trọn vòng ngày, 29 test P2. AI sai: snapshot Shop không hiện cấp vừa mua — test bắt được; 3 test do AI viết sai được tôi đối chiếu với Ticket-02 trước khi sửa.
-- **Phase 3:** đổi kho sang cá thể có độ tươi (ADR-0002, `chonoi/items.py`, gather/quan/day/shop), migrate 36 test, 20 test P3, HUD độ tươi. AI sai: làm tròn fresh trong JSONL khiến smoke bàn giao không khớp chính xác — bắt được nhờ chạy đúng ví dụ ticket.
-- **Điều tôi học được:** với AI, phần tốn công nhất không phải viết code mà là chốt chỗ mơ hồ; ghi giả định + khóa bằng test giúp đổi luật nhanh khi PO trả lời khác.
+- **Phần tôi làm (nhóm 1 người, mọi lát):** P1 luật gather/quan (`2df311f`…`35632df`); P2 contract v1.1, cá/Cá Sấu, `day`, Shop, pause, cửa sổ chơi (`b5391ed`…`3a11e2e`); P3 kho cá thể có độ tươi, ADR-0002 (`806501d`…`e20a0c1`); P4 bench, soak, cảnh báo + tương phản cao, phát hành v1.0.0. Bằng chứng: `docs/proof/phase-1..4/`.
+- **Đã giúp ai / review:** không có thành viên khác; tôi review mọi diff do Claude Code viết trước khi commit, đối chiếu với câu PRD/ticket.
+- **AI sai ở đâu và tôi phát hiện thế nào:** P1 đoán sai 6/11 luật khi chưa có PRD (đối chiếu clarify ↔ PRD); P2 Shop không hiện cấp vừa mua (test bắt); P3 làm tròn fresh làm smoke "so chính xác" hỏng (chạy đúng ví dụ ticket); P4 giao diện có lỗi đọc/che chữ mà test không thấy (xem ảnh chụp).
+- **Bài học:** với AI, phần đắt nhất là chốt yêu cầu và kiểm chứng, không phải viết code; mỗi loại rủi ro cần một loại bằng chứng riêng — test cho luật, ảnh chụp cho giao diện, số đo cho hiệu năng.

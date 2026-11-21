@@ -11,8 +11,10 @@
 - 1 hành động cho Phase 4: hainguyen312 chơi thử 1 Ngày trên trình duyệt + chụp màn hình HUD (độ tươi, Thủy quái, Shop) vào `docs/proof/phase-4/` trước khi phát hành v1.0.0.
 
 ## Phase 4 (cuối)
-- Rà lại hành động Phase 2: đã làm chưa? vì sao?
-- Điều tốt / điều tệ:
-- Số liệu: số commit theo người, cách đọc code của nhau, token theo người:
-- Một lần AI sai và cách nhóm phát hiện:
-- Nếu làm lại, đổi gì:
+- **Rà lại hành động Phase 2** ("hainguyen312 chơi thử 1 Ngày trên trình duyệt 1280×720 + chụp màn hình"): **làm được một phần, muộn 2 phase.** Lý do treo: mỗi phase hết giờ vào phần luật/test bắt buộc, hành động này không có test nào ép. Ở P4 đã làm bằng cách tự động: `tools/screenshot.py` chụp HUD bằng Chrome headless (cảnh báo sáng/tối ở chế độ thường + tương phản cao, menu, DayIntro) và benchmark render thật 30 s. Chính việc xem ảnh phát hiện 2 lỗi hiển thị mà 118 test không bắt được (nhãn oxy khó đọc, hộp cảnh báo che người chơi; ở tương phản cao dòng bình thường cũng bị tô vàng). **Còn vướng:** chưa có người chơi trọn 5 Ngày bằng tay — chuyển thành hành động tiếp theo.
+- **Điều tốt:** dán nguyên văn ticket từ P2 trở đi → không làm lại luật; mỗi phase có skill `verify-phase N` sinh bằng chứng bằng 1 lệnh; ADR-0002 trước breaking change kho; phân số cho độ tươi; tìm ra Chrome headless chờ 60 s là do dò proxy (WPAD) chứ không phải game (load_ms 64 s → 0.5 s).
+- **Điều tệ:** nhóm 1 người nên không có review chéo thật, mọi "review" là người đọc diff của AI; giao diện bị bỏ quên tới P4; tag các phase đều muộn so với mốc giờ của lab.
+- **Số liệu:** commit theo người — hainguyen312: toàn bộ (20 commit P1–P3 + các commit P4, xem `git shortlog -sn`), không có người khác. Cách đọc code: người đọc lại diff của agent trước mỗi commit + test hộp đen + ảnh chụp HUD. Token ước tính (theo `docs/ai-usage-log.md`): P1 ~180k, P2 ~135k, P3 ~80k, P4 ~70k, tổng ~465k token cho hainguyen312.
+- **Một lần AI sai và cách nhóm phát hiện:** P1 — khi chưa có PRD, agent tự đoán 11 luật thì 6 luật sai (boa `round` thay `floor`, khách rời trước interact, bắt trượt tốn hồi chiêu, tự thêm `no_table`…). Phát hiện bằng cách đặt từng dòng `docs/clarify.md` cạnh câu PRD tương ứng khi PRD được dán vào; sửa luật + test trong cùng lượt.
+- **Nếu làm lại, đổi gì:** lấy nguyên văn đề trước khi viết dòng code đầu tiên; thêm một bước "chụp ảnh HUD" vào `verify-phase` ngay từ P2 để giao diện có bằng chứng như luật; gắn tag đúng mốc giờ dù chưa xong hết.
+- **Hành động tiếp theo:** hainguyen312 chơi trọn 5 Ngày bằng tay trước buổi demo và quay video < 5 phút theo checklist demo.

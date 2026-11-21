@@ -1,28 +1,54 @@
 # K5-L3B-LAB-Day12-AI-SDLC-Haind
 
 > **Nhóm Haind** (1 thành viên: [@hainguyen312](https://github.com/hainguyen312)) — xem [`TEAM.md`](TEAM.md).
-> Trạng thái: **Phase 3 (Ticket-03 "Mùa Nước Nổi") xong** — Test Contract v1.2: kho cá thể có độ tươi (hao, ươn, giữ chỗ theo id, giá theo tươi) trên nền vòng ngày 5 Ngày, cá bơi/sinh, Cá Sấu, Shop, pause; 118 test xanh. Bằng chứng: [`phase-1`](docs/verification/phase-1.md) · [`phase-2`](docs/verification/phase-2.md) · [`phase-3`](docs/verification/phase-3.md). Breaking change kho: xem [`CHANGELOG.md`](CHANGELOG.md).
+> **v1.0.0** (Phase 4, Ticket-04, Test Contract v1.3) — vòng ngày 5 Ngày: lặn & hái (cá bơi/sinh, Cá Sấu Năm Chèo, oxy/Máu),
+> mở quán (2 bếp, 4 bàn, 6 món), Shop nâng cấp, pause, kho cá thể có độ tươi, cảnh báo dễ nhận biết + chế độ tương phản cao,
+> benchmark có render và soak 10 Ngày. 125 test xanh. Ghi chú phát hành: [`docs/release-notes-v1.0.0.md`](docs/release-notes-v1.0.0.md).
+> Bằng chứng: [phase-1](docs/verification/phase-1.md) · [phase-2](docs/verification/phase-2.md) · [phase-3](docs/verification/phase-3.md) · [phase-4](docs/verification/phase-4.md).
 
-**Chạy từ clone sạch** (macOS/Linux, chỉ cần Python ≥ 3.9, không cài thêm gì):
+### Yêu cầu môi trường
+- macOS hoặc Linux, **Python ≥ 3.9** (chỉ thư viện chuẩn, không cần `pip install`), trình duyệt hiện đại (Chrome, Firefox, Safari) để chơi.
+- Benchmark cần thêm **Google Chrome / Chromium** (chạy headless; đặt `CHONOI_BROWSER=/đường/dẫn` nếu ở chỗ khác).
+
+### Chạy từ clone sạch (≤ 3 lệnh)
 
 ```bash
-git clone https://github.com/hainguyen312/K5-L3B-LAB-Day12-AI-SDLC-Haind && cd K5-L3B-LAB-Day12-AI-SDLC-Haind
-python3 -m chonoi.live                     # mở địa chỉ in ra trên trình duyệt: menu -> 5 Ngày -> tổng kết
+git clone https://github.com/hainguyen312/K5-L3B-LAB-Day12-AI-SDLC-Haind
+cd K5-L3B-LAB-Day12-AI-SDLC-Haind
+python3 -m chonoi.live                     # mở địa chỉ in ra (mặc định http://127.0.0.1:8000/): menu -> 5 Ngày -> tổng kết
 ```
 
+Bản đóng gói ở GitHub Release v1.0.0: giải nén `quan-an-cho-noi-v1.0.0.zip`, `cd quan-an-cho-noi-v1.0.0`, `python3 -m chonoi.live`.
+
+### Điều khiển
+| Phím | Việc |
+|---|---|
+| WASD / mũi tên | bơi (sáng) · đi (tối) |
+| **E** | cập bến, hái (sáng) · nấu, lấy món, phục vụ (tối) |
+| **Space** | bắt cá (dưới nước) |
+| **Esc / P** | tạm dừng (Tiếp tục / Về menu) |
+| **H** | bật/tắt **tương phản cao** (nhớ giữa các lần mở; hoặc mở `/?contrast=1`) |
+| Shop: **1 / 2 / Enter** | mua Bình oxy / Áo phao / đóng Shop |
+
+### Cách chơi và cảnh báo
 - **Vòng ngày:** DayIntro (Má Tư đọc món + nguyên liệu cần) → lặn & hái → EveningIntro → mở quán → DayResult → Shop → Ngày kế; sau Ngày 5 là Tổng kết.
-- **Điều khiển:** WASD / mũi tên bơi hoặc đi · **E** tương tác (cập bến, hái; ở quán: nấu, lấy món, phục vụ) · **Space** bắt cá · **Esc/P** tạm dừng (Tiếp tục / Về menu) · Shop: **1** Bình oxy, **2** Áo phao, **Enter** đóng Shop.
-- **Cẩn thận:** Cá Sấu Năm Chèo tuần tra ở d ≥ 10 m; bị chạm mất 1 Máu và nửa giỏ. Oxy cạn thì ngạt mất Máu. Máu về 0 là ngất, tối mở quán với kho rỗng.
-- **Độ tươi (Mùa Nước Nổi):** hàng trong giỏ hao 0.5/s, trong kho quán 0.25/s; dưới 30 là ươn (✗ trên HUD), không nấu được. Giá món = giá niêm yết × độ tươi trung bình — về bến sớm thì bán được giá hơn.
+- **Cảnh báo (chữ + biểu tượng):** ⚠ *Thủy quái gần!* + viền tím khi Cá Sấu đuổi / ở gần dưới d ≥ 10 m · ⚠ *Oxy sắp hết!* khi oxy < 25% (⚠ *Hết hơi!* khi cạn) · 😠 *Khách sắp giận!* khi kiên nhẫn của khách < 25%. Ảnh ở chế độ thường và tương phản cao: [`docs/proof/phase-4/`](docs/proof/phase-4/).
+- **Độ tươi:** hàng trong giỏ hao 0.5/s, trong kho quán 0.25/s; dưới 30 là ươn (✗), không nấu được. Giá món = giá niêm yết × độ tươi trung bình.
 - **Điểm:** `earned + 100 × floor(reputation)` (tiền đơn vị nghìn đồng; uy tín 0–5, bắt đầu 3.0). Mua nâng cấp trừ tiền nhưng không trừ điểm.
-- **Chơi riêng từng buổi:** `python3 -m chonoi.live --mode gather --inventory-out kho.json` rồi `python3 -m chonoi.live --mode quan --inventory kho.json`.
-- **Test (1 lệnh):** `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
-- **Kiểm chứng + bằng chứng:** `bash .agents/skills/verify-phase/verify.sh 3`
-- **Headless:** `python3 -m chonoi.headless --mode gather|quan|day --seed 1 --ticks 22200 --out out.jsonl [--days 1..5]` (cờ theo Test Contract v1.2).
+
+### Lệnh cho kiểm thử / chấm
+| Việc | Lệnh |
+|---|---|
+| Test (1 lệnh) | `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v` |
+| Headless | `python3 -m chonoi.headless --mode gather\|quan\|day --seed 1 --ticks 22200 --out out.jsonl [--days 1..5]` |
+| Benchmark có render | `python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json` |
+| Soak headless | `python3 -m chonoi.soak --seed 7 --days 10 --out soak.json` |
+| Kiểm chứng + bằng chứng | `bash .agents/skills/verify-phase/verify.sh 4` |
+| Chơi riêng từng buổi | `python3 -m chonoi.live --mode gather --inventory-out kho.json` rồi `python3 -m chonoi.live --mode quan --inventory kho.json` |
 
 ## Sáng tạo của nhóm
 
-Phase 1–3 ưu tiên **làm lõi đúng trước**: chưa làm mục mở rộng nào của Ticket-02/03 (nhóm 1 người, không bắt buộc).
+Phase 1–4 ưu tiên **làm lõi đúng trước**: không làm mục mở rộng nào của Ticket-02/03/04 (nhóm 1 người, không bắt buộc), nên `extensions` không khai.
 Phần trình bày riêng của nhóm trong cửa sổ chơi (không ảnh hưởng headless): bảng màu nước phù sa / ánh hồng buổi sớm / đèn dây vàng ở quán, lời Má Tư giọng Nam Bộ ở DayIntro. Các giả định luật (không phải sáng tạo) ghi ở
 [`docs/clarify.md`](docs/clarify.md). Mở rộng ở phase sau sẽ được liệt kê tại đây và tắt ở headless.
 
