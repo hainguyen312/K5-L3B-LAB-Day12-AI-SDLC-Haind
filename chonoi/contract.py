@@ -1,4 +1,5 @@
-"""Đọc game.contract.json và kiểm dải hợp lệ của tuning (Test Contract v1.1: PRD-0 mục A + Ticket-02 mục 4.1)."""
+"""Đọc game.contract.json và kiểm dải hợp lệ của tuning (Test Contract v1.2: PRD-0 mục A, Ticket-02 mục 4.1,
+Ticket-03 "Contract v1.2" — khối freshness)."""
 
 import json
 import os
@@ -27,8 +28,8 @@ def load_contract(path=DEFAULT_PATH) -> dict:
             c = json.load(f)
     except (OSError, ValueError) as e:
         raise BadInput(f"không đọc được {path}: {e}")
-    if c.get("contract_version") != "1.1":
-        raise BadInput("contract_version phải là \"1.1\"")
+    if c.get("contract_version") != "1.2":
+        raise BadInput("contract_version phải là \"1.2\"")
     validate_tuning(c.get("tuning"))
     return c
 
@@ -254,3 +255,10 @@ def validate_tuning(t):
         if isinstance(price, bool) or not isinstance(price, int) or price <= 0 or not _num(cook) or cook <= 0:
             raise BadInput(f"menu.{dish_id}: price (nguyên) và cook_s phải > 0")
     _validate_day(t)
+    fr = t.get("freshness")
+    if not isinstance(fr, dict) or set(fr) != {"initial", "gather_decay_per_s", "quan_decay_per_s", "spoiled_below"}:
+        raise BadInput("tuning.freshness cần initial, gather_decay_per_s, quan_decay_per_s, spoiled_below")
+    _between("freshness.initial", fr["initial"], 1, 100)
+    _between("freshness.spoiled_below", fr["spoiled_below"], 0, fr["initial"])
+    for k in ("gather_decay_per_s", "quan_decay_per_s"):
+        _between(f"freshness.{k}", fr[k], 0, 100)

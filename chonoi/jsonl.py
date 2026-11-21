@@ -1,9 +1,18 @@
-"""Ghi JSONL tất định: làm tròn 3 chữ số khi XUẤT (tính toán dùng giá trị chính xác)."""
+"""Ghi JSONL tất định: làm tròn 3 chữ số khi XUẤT (tính toán dùng giá trị chính xác).
+
+Ngoại lệ v1.2: độ tươi (`ExactFloat`) xuất đủ độ chính xác để snapshot quán khớp CHÍNH XÁC file kho (Ticket-03).
+"""
 
 import json
 
 
+class ExactFloat(float):
+    """Số thực không làm tròn khi xuất JSONL (dùng cho fresh)."""
+
+
 def _clean(v):
+    if isinstance(v, ExactFloat):
+        return float(v)
     if isinstance(v, float):
         r = round(v, 3)
         return 0.0 if r == 0 else r  # tránh -0.0

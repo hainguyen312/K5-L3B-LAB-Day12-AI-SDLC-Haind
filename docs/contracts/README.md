@@ -56,3 +56,9 @@ Người nghe: UI (nhật ký sự kiện, HUD) và test (`tests/test_rules_p1.p
 | shop | `bought` | `upgrade, level, price, money` |
 | shop | `buy_failed` | `action, reason: funds|max_level|unknown` |
 | shop | `shop_end` | `reason: done|time` |
+
+## 5. Thay đổi v1.2 (Ticket-03, BREAKING) — xem ADR-0002
+- **Kho / giỏ / phần giữ là cá thể:** `{"items": [{"id": "I1", "kind": "ca_linh", "fresh": 100}, ...]}`, kho rỗng `{"items": []}`, sắp theo id. Kho đếm → mã 2.
+- `gather.hold`, `quan.stock`: mảng cá thể. `customers[].reserved`: mảng id cá thể. `cook_started.data.items`, `lost` (monster_hit/faint): mảng cá thể.
+- Event mới `spoiled {item_id, kind, location: hold|stock}`.
+- `fresh` trong JSONL không làm tròn (khớp chính xác file kho).
