@@ -18,6 +18,8 @@
  * Màn hình: menu chính, DayIntro, EveningIntro, DayResult, Shop, Summary, menu pause.
  * Phím: WASD / mũi tên di chuyển · E tương tác · Space bắt cá · Esc/P tạm dừng · Shop: 1 Bình oxy, 2 Áo phao, Enter xong.
  * Mọi chữ dùng font không chân ≥ 18 px (Ticket-02 mục 2 "HUD").
+ * v1.2 (Ticket-03): giỏ/kho là cá thể {id, kind, fresh}; HUD hiện thanh độ tươi từng ô giỏ, dấu ✗ khi ươn (< 30),
+ * độ tươi trung bình + số hàng ươn trong kho quán và Shop.
  */
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
@@ -147,8 +149,16 @@ function bar(x, y, w, h, frac, color, label) {
 function panel(x, y, w, h, a = 0.72) { ctx.fillStyle = `rgba(16,22,28,${a})`; ctx.fillRect(x, y, w, h); ctx.strokeStyle = "rgba(244,196,48,.5)"; ctx.strokeRect(x + .5, y + .5, w - 1, h - 1); }
 function fmtTime(ticks) { const s = Math.ceil(ticks / 60); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
 const blink = () => Math.floor(performance.now() / 300) % 2 === 0;
-function counts(arr) { const c = {}; (arr || []).forEach((k) => (c[k] = (c[k] || 0) + 1)); return c; }
-function items(obj) { return Object.keys(obj || {}).filter((k) => obj[k] > 0).map((k) => kn(k) + " ×" + obj[k]).join(", ") || "(trống)"; }
+const SPOIL = 30;
+const kindOf = (x) => (typeof x === "string" ? x : x.kind);
+function counts(arr) { const c = {}; (arr || []).forEach((x) => { const k = kindOf(x); c[k] = (c[k] || 0) + 1; }); return c; }
+function items(obj) { if (Array.isArray(obj)) obj = counts(obj); return Object.keys(obj || {}).filter((k) => obj[k] > 0).map((k) => kn(k) + " ×" + obj[k]).join(", ") || "(trống)"; }
+function freshSummary(arr) {   // "cá lóc ×2 (tươi 97%), … · ươn 1"
+  const by = {}; let spoiled = 0;
+  (arr || []).forEach((it) => { if (it.fresh < SPOIL) { spoiled++; return; } (by[it.kind] = by[it.kind] || []).push(it.fresh); });
+  const parts = Object.keys(by).map((k) => `${kn(k)} ×${by[k].length} (tươi ${Math.floor(by[k].reduce((a, b) => a + b, 0) / by[k].length)}%)`);
+  return (parts.join(", ") || "(trống)") + (spoiled ? ` · ✗ ươn ${spoiled}` : "");
+}
 
 // ---------- cảnh GATHER ----------
 function drawGather(w, h) {
@@ -228,9 +238,15 @@ function drawGather(w, h) {
   for (let i = 0; i < cap; i++) {
     const x0 = 16 + i * (sz + 4), y0 = h - bottom + 30;
     ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x0, y0, sz, sz);
-    if (snap.hold[i]) { ctx.fillStyle = kc(snap.hold[i]); ctx.fillRect(x0 + 3, y0 + 3, sz - 6, sz - 6); }
+    const it = snap.hold[i];
+    if (it) {
+      const bad = it.fresh < SPOIL;
+      ctx.globalAlpha = bad ? 0.45 : 1; ctx.fillStyle = kc(it.kind); ctx.fillRect(x0 + 3, y0 + 3, sz - 6, sz - 6); ctx.globalAlpha = 1;
+      ctx.fillStyle = bad ? "#ff5a5f" : it.fresh < 60 ? "#f4c430" : "#5bbf6a"; ctx.fillRect(x0, y0 + sz + 2, sz * it.fresh / 100, 5);  // thanh độ tươi
+      if (bad) text("✗", x0 + sz / 2, y0 + sz - 5, { align: "center", bold: true, color: "#ff5a5f" });
+    }
   }
-  text(`Giỏ ${snap.hold.length}/${cap}: ${items(got)}`, 16 + cap * (sz + 4) + 10, h - bottom + 50);
+  text(`Giỏ ${snap.hold.length}/${cap}: ${freshSummary(snap.hold)}`, 16 + cap * (sz + 4) + 10, h - bottom + 50);
   text("WASD bơi · E hái/cập bến · Space bắt cá · Esc tạm dừng", w - 16, h - 12, { align: "right", color: "#cdbfa6" });
 }
 
@@ -276,9 +292,9 @@ function drawQuan(w, h) {
   const shift = snap.mode === "day" && ds ? ds.shift_money : snap.money;
   text(`Tiền ca ${shift}k · tổng ${snap.money}k · uy tín ${snap.reputation.toFixed(1)}` + (snap.day ? ` · Ngày ${snap.day}` : ""), 16, 72);
   text("Tay: " + (snap.hand ? dn(snap.hand.dish_id) + " (" + snap.hand.order_id + ")" : "trống"), w - 16, 34, { align: "right", color: "#f4c430" });
-  const held = {}; (snap.customers || []).forEach((c) => Object.entries(c.reserved || {}).forEach(([k, v]) => (held[k] = (held[k] || 0) + v)));
-  const avail = {}; Object.keys(snap.stock || {}).forEach((k) => (avail[k] = snap.stock[k] - (held[k] || 0)));
-  text("Kho khả dụng: " + items(avail), w - 16, 72, { align: "right" });
+  const held = new Set(); (snap.customers || []).forEach((c) => (c.reserved || []).forEach((i) => held.add(i)));
+  const avail = (snap.stock || []).filter((it) => !held.has(it.id));   // khả dụng = chưa ai giữ (ươn đánh dấu ✗)
+  text("Kho khả dụng: " + freshSummary(avail), w - 16, 72, { align: "right" });
   // bảng đơn từng bàn
   const px0 = w - 350; panel(px0, top, 340, 40 + 34 * (snap.tables || []).length);
   text("Đơn tại bàn", px0 + 12, top + 28, { bold: true });
@@ -305,7 +321,7 @@ function drawShop(w, h) {
     text(nxt ? `Cấp ${nxt.level}: ${nxt[UPG[k][1]]}${UPG[k][2]} — giá ${nxt.price}k` + (snap.money < nxt.price ? " (thiếu tiền)" : "") : "Đã tối đa",
       w / 2 - 300, y + 32, { color: nxt && snap.money >= nxt.price ? "#5bbf6a" : "#cdbfa6" });
   });
-  text("Kho dư từ ca (sẽ bỏ): " + items(snap.stock), w / 2, 440, { align: "center", color: "#cdbfa6" });
+  text("Kho dư từ ca (sẽ bỏ): " + freshSummary(snap.stock), w / 2, 440, { align: "center", color: "#cdbfa6" });
   text("1 / 2 mua · Enter: đóng Shop, sang Ngày mới · Esc tạm dừng", w / 2, 495, { align: "center" });
   const ev = (snap.events || []).filter((e) => e.name === "bought" || e.name === "buy_failed").slice(-1)[0];
   if (ev && ev.day === snap.day) text(ev.name === "bought" ? `Đã mua ${UPG[ev.data.upgrade][0]} cấp ${ev.data.level}` : `Không mua được (${{ funds: "thiếu tiền", max_level: "đã tối đa", unknown: "không hỗ trợ" }[ev.data.reason] || ev.data.reason})`,
@@ -335,8 +351,9 @@ function drawScreens(w, h) {
       `Tự qua sau ${Math.max(0, 4 - u.elapsed).toFixed(0)}s hoặc nhấn phím bất kỳ`);
   } else if (u.screen === "evening_intro") {
     const menu = (snap.meta || {}).menu || {}, plan = snap.day_plan ? Object.keys(snap.day_plan.dishes) : Object.keys(menu);
-    const can = plan.filter((d) => Object.entries(menu[d].recipe).every(([k, v]) => (snap.stock[k] || 0) >= v));
-    screenBox(w, h, "Chiều tối — mở quán", ["Nhập kho: " + items(ds.inventory || snap.stock),
+    const good = counts((snap.stock || []).filter((it) => it.fresh >= SPOIL));
+    const can = plan.filter((d) => Object.entries(menu[d].recipe).every(([k, v]) => (good[k] || 0) >= v));
+    screenBox(w, h, "Chiều tối — mở quán", ["Nhập kho: " + freshSummary(snap.stock),
       "Món nấu được: " + (can.map(dn).join(", ") || "chưa đủ nguyên liệu món nào")], "Nhấn phím bất kỳ để mở quán");
   } else if (u.screen === "day_result") {
     const dr = (ds.rep_end - ds.rep_start) || 0;
