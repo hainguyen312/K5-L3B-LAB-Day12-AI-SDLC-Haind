@@ -1,25 +1,28 @@
 # K5-L3B-LAB-Day12-AI-SDLC-Haind
 
 > **Nhóm Haind** (1 thành viên: [@hainguyen312](https://github.com/hainguyen312)) — xem [`TEAM.md`](TEAM.md).
-> Trạng thái: **Phase 1 (PRD-0) xong** — luật `gather` + `quan` theo Test Contract v1.0, 68 test xanh, bằng chứng ở [`docs/verification/phase-1.md`](docs/verification/phase-1.md).
+> Trạng thái: **Phase 2 (Ticket-02) xong** — Test Contract v1.1: vòng ngày 5 Ngày, cá bơi/sinh, Cá Sấu, Shop nâng cấp, pause; 98 test xanh. Bằng chứng: [`docs/verification/phase-1.md`](docs/verification/phase-1.md), [`docs/verification/phase-2.md`](docs/verification/phase-2.md).
 
 **Chạy từ clone sạch** (macOS/Linux, chỉ cần Python ≥ 3.9, không cài thêm gì):
 
 ```bash
 git clone https://github.com/hainguyen312/K5-L3B-LAB-Day12-AI-SDLC-Haind && cd K5-L3B-LAB-Day12-AI-SDLC-Haind
-python3 -m chonoi.live --mode gather --inventory-out kho.json      # buổi sáng: mở địa chỉ in ra trên trình duyệt
-python3 -m chonoi.live --mode quan --inventory kho.json            # buổi tối: mở quán với kho vừa mang về
+python3 -m chonoi.live                     # mở địa chỉ in ra trên trình duyệt: menu -> 5 Ngày -> tổng kết
 ```
 
-- **Điều khiển:** WASD / mũi tên bơi hoặc đi · **E** tương tác (cập bến, hái; ở quán: nấu, lấy món, phục vụ) · **Space** bắt cá · **R** chơi lại.
-- **Điểm:** `earned + 100 × floor(reputation)` (tiền đơn vị nghìn đồng; uy tín 0–5, bắt đầu 3.0).
+- **Vòng ngày:** DayIntro (Má Tư đọc món + nguyên liệu cần) → lặn & hái → EveningIntro → mở quán → DayResult → Shop → Ngày kế; sau Ngày 5 là Tổng kết.
+- **Điều khiển:** WASD / mũi tên bơi hoặc đi · **E** tương tác (cập bến, hái; ở quán: nấu, lấy món, phục vụ) · **Space** bắt cá · **Esc/P** tạm dừng (Tiếp tục / Về menu) · Shop: **1** Bình oxy, **2** Áo phao, **Enter** đóng Shop.
+- **Cẩn thận:** Cá Sấu Năm Chèo tuần tra ở d ≥ 10 m; bị chạm mất 1 Máu và nửa giỏ. Oxy cạn thì ngạt mất Máu. Máu về 0 là ngất, tối mở quán với kho rỗng.
+- **Điểm:** `earned + 100 × floor(reputation)` (tiền đơn vị nghìn đồng; uy tín 0–5, bắt đầu 3.0). Mua nâng cấp trừ tiền nhưng không trừ điểm.
+- **Chơi riêng từng buổi:** `python3 -m chonoi.live --mode gather --inventory-out kho.json` rồi `python3 -m chonoi.live --mode quan --inventory kho.json`.
 - **Test (1 lệnh):** `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
-- **Kiểm chứng + bằng chứng:** `bash .agents/skills/verify-phase/verify.sh 1`
-- **Headless:** `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl` (cờ theo PRD-0 mục B).
+- **Kiểm chứng + bằng chứng:** `bash .agents/skills/verify-phase/verify.sh 2`
+- **Headless:** `python3 -m chonoi.headless --mode gather|quan|day --seed 1 --ticks 22200 --out out.jsonl [--days 1..5]` (cờ theo Test Contract v1.1).
 
 ## Sáng tạo của nhóm
 
-Phase 1 ưu tiên **làm lõi đúng trước**: chưa có mở rộng sáng tạo nào. Các giả định luật (không phải sáng tạo) ghi ở
+Phase 1–2 ưu tiên **làm lõi đúng trước**: chưa làm mục mở rộng nào của Ticket-02 (nhóm 1 người, không bắt buộc).
+Phần trình bày riêng của nhóm trong cửa sổ chơi (không ảnh hưởng headless): bảng màu nước phù sa / ánh hồng buổi sớm / đèn dây vàng ở quán, lời Má Tư giọng Nam Bộ ở DayIntro. Các giả định luật (không phải sáng tạo) ghi ở
 [`docs/clarify.md`](docs/clarify.md). Mở rộng ở phase sau sẽ được liệt kê tại đây và tắt ở headless.
 
 ---

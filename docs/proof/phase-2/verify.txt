@@ -1,0 +1,119 @@
+# verify phase 2 — 844d867 — python Python 3.12.0
+## unittest
+test_state_input_and_clean_stop (test_live.LiveServerTest.test_state_input_and_clean_stop) ... ok
+test_menu_intro_play_pause (test_live_day.LiveDayTest.test_menu_intro_play_pause) ... ok
+test_bad_frames_raise (test_python_starter_units.Units.test_bad_frames_raise) ... ok
+test_id_allocator_continues_after_max (test_python_starter_units.Units.test_id_allocator_continues_after_max) ... ok
+test_id_sorting (test_python_starter_units.Units.test_id_sorting) ... ok
+test_input_edges_and_inherit (test_python_starter_units.Units.test_input_edges_and_inherit) ... ok
+test_live_inputs_keep_fast_tap_edge (test_python_starter_units.Units.test_live_inputs_keep_fast_tap_edge) ... ok
+test_session_steps_gather_and_dock (test_python_starter_units.Units.test_session_steps_gather_and_dock) ... ok
+test_v11_buttons_accepted_unknown_rejected (test_python_starter_units.Units.test_v11_buttons_accepted_unknown_rejected) ... ok
+test_catch_yield_removes_school (test_rules_p1.GatherCatch.test_catch_yield_removes_school) ... ok
+test_cooldown_reuse_from_t_plus_L (test_rules_p1.GatherCatch.test_cooldown_reuse_from_t_plus_L) ... ok
+test_deterministic_full_run (test_rules_p1.GatherCatch.test_deterministic_full_run) ... ok
+test_hold_full_on_catch_keeps_school_and_cooldown (test_rules_p1.GatherCatch.test_hold_full_on_catch_keeps_school_and_cooldown) ... ok
+test_miss_has_no_event_and_no_cooldown (test_rules_p1.GatherCatch.test_miss_has_no_event_and_no_cooldown) ... ok
+test_no_catch_at_surface (test_rules_p1.GatherCatch.test_no_catch_at_surface) ... ok
+test_dock_has_priority_and_writes_inventory (test_rules_p1.GatherHarvest.test_dock_has_priority_and_writes_inventory) ... ok
+test_harvest_on_last_step_counts (test_rules_p1.GatherHarvest.test_harvest_on_last_step_counts) ... ok
+test_hold_full_on_gather (test_rules_p1.GatherHarvest.test_hold_full_on_gather) ... ok
+test_no_harvest_underwater_or_far (test_rules_p1.GatherHarvest.test_no_harvest_underwater_or_far) ... ok
+test_prd_example_node_on_radius_edge (test_rules_p1.GatherHarvest.test_prd_example_node_on_radius_edge) ... ok
+test_regrow_event_and_harvest_again (test_rules_p1.GatherHarvest.test_regrow_event_and_harvest_again) ... ok
+test_tie_breaks_by_id (test_rules_p1.GatherHarvest.test_tie_breaks_by_id) ... ok
+test_dive_and_surface_once_per_crossing (test_rules_p1.GatherOxygen.test_dive_and_surface_once_per_crossing) ... ok
+test_drain_refill_clamp (test_rules_p1.GatherOxygen.test_drain_refill_clamp) ... ok
+test_faint_drops_hold_lifo_and_empty_inventory (test_rules_p1.GatherOxygen.test_faint_drops_hold_lifo_and_empty_inventory) ... ok
+test_oxygen_empty_then_first_choke_at_t_plus_59 (test_rules_p1.GatherOxygen.test_oxygen_empty_then_first_choke_at_t_plus_59) ... ok
+test_surface_on_choke_step_refills_no_choke (test_rules_p1.GatherOxygen.test_surface_on_choke_step_refills_no_choke) ... ok
+test_two_process_smoke (test_rules_p1.PrdSmokeG.test_two_process_smoke) ... ok
+test_closing_pays_eating_customer_prd_end_example (test_rules_p1.QuanClosing.test_closing_pays_eating_customer_prd_end_example) ... ok
+test_closing_waiting_customer_leaves_without_penalty (test_rules_p1.QuanClosing.test_closing_waiting_customer_leaves_without_penalty) ... ok
+test_full_shift_deterministic (test_rules_p1.QuanClosing.test_full_shift_deterministic) ... ok
+test_first_customer_reserves_recipe (test_rules_p1.QuanCustomers.test_first_customer_reserves_recipe) ... ok
+test_new_customer_patience_starts_next_step (test_rules_p1.QuanCustomers.test_new_customer_patience_starts_next_step) ... ok
+test_no_dish_when_no_available_stock (test_rules_p1.QuanCustomers.test_no_dish_when_no_available_stock) ... ok
+test_no_table_skips_silently (test_rules_p1.QuanCustomers.test_no_table_skips_silently) ... ok
+test_patience_leave_releases_reservation (test_rules_p1.QuanCustomers.test_patience_leave_releases_reservation) ... ok
+test_schedule_by_phase_tick_even_when_shift_shortened (test_rules_p1.QuanCustomers.test_schedule_by_phase_tick_even_when_shift_shortened) ... ok
+test_rule_conflicts_exit_2 (test_rules_p1.QuanFixtures.test_rule_conflicts_exit_2) ... ok
+test_valid_fixtures (test_rules_p1.QuanFixtures.test_valid_fixtures) ... ok
+test_customer_leaving_discards_dish_no_refund (test_rules_p1.QuanService.test_customer_leaving_discards_dish_no_refund) ... ok
+test_full_loop_cook_pick_serve_pay (test_rules_p1.QuanService.test_full_loop_cook_pick_serve_pay) ... ok
+test_ready_ticks_increase_while_on_stove (test_rules_p1.QuanService.test_ready_ticks_increase_while_on_stove) ... ok
+test_serve_on_patience_zero_tick_is_valid (test_rules_p1.QuanService.test_serve_on_patience_zero_tick_is_valid) ... ok
+test_tip_threshold_uses_patience_after_step_1 (test_rules_p1.QuanService.test_tip_threshold_uses_patience_after_step_1) ... ok
+test_wrong_order_in_hand_not_served (test_rules_p1.QuanService.test_wrong_order_in_hand_not_served) ... ok
+test_bad_monster_fixture_exit_2 (test_rules_p2.Crocodile.test_bad_monster_fixture_exit_2) ... ok
+test_chase_when_deep_and_close_then_exit_when_shallow (test_rules_p2.Crocodile.test_chase_when_deep_and_close_then_exit_when_shallow) ... ok
+test_default_layout_day1_and_patrol (test_rules_p2.Crocodile.test_default_layout_day1_and_patrol) ... ok
+test_hit_loses_hp_drops_half_lifo_invuln_recoil (test_rules_p2.Crocodile.test_hit_loses_hp_drops_half_lifo_invuln_recoil) ... ok
+test_monster_faint_lists_remaining_hold (test_rules_p2.Crocodile.test_monster_faint_lists_remaining_hold) ... ok
+test_no_hit_when_shallow_or_invulnerable (test_rules_p2.Crocodile.test_no_hit_when_shallow_or_invulnerable) ... ok
+test_same_center_recoils_plus_x (test_rules_p2.Crocodile.test_same_center_recoils_plus_x) ... ok
+test_buy_max_level_unknown_and_exact_price (test_rules_p2.Day.test_buy_max_level_unknown_and_exact_price) ... ok
+test_cli_days_rules (test_rules_p2.Day.test_cli_days_rules) ... ok
+test_day_deterministic (test_rules_p2.Day.test_day_deterministic) ... ok
+test_day_scenario_conflicts_exit_2 (test_rules_p2.Day.test_day_scenario_conflicts_exit_2) ... ok
+test_dock_handover_plan_filter_and_shop_buy_applies_next_day (test_rules_p2.Day.test_dock_handover_plan_filter_and_shop_buy_applies_next_day) ... ok
+test_faint_still_opens_quan_with_empty_stock (test_rules_p2.Day.test_faint_still_opens_quan_with_empty_stock) ... ok
+test_one_day_phase_sequence (test_rules_p2.Day.test_one_day_phase_sequence) ... ok
+test_runtime_conflict_at_quan_open_exit_2 (test_rules_p2.Day.test_runtime_conflict_at_quan_open_exit_2) ... ok
+test_three_days_m2_from_day3_and_hp_refill (test_rules_p2.Day.test_three_days_m2_from_day3_and_hp_refill) ... ok
+test_ca_keo_yield_and_keo_neo_node (test_rules_p2.Fish.test_ca_keo_yield_and_keo_neo_node) ... ok
+test_catch_uses_position_before_swim (test_rules_p2.Fish.test_catch_uses_position_before_swim) ... ok
+test_initial_8_schools_at_distinct_spawn_points (test_rules_p2.Fish.test_initial_8_schools_at_distinct_spawn_points) ... ok
+test_random_fish_false_static_no_spawn (test_rules_p2.Fish.test_random_fish_false_static_no_spawn) ... ok
+test_reflect_x_edge_and_depth_band (test_rules_p2.Fish.test_reflect_x_edge_and_depth_band) ... ok
+test_spawn_every_360_after_swim_cap_and_clearance (test_rules_p2.Fish.test_spawn_every_360_after_swim_cap_and_clearance) ... ok
+test_swim_speed_and_age (test_rules_p2.Fish.test_swim_speed_and_age) ... ok
+test_turn_by_seed_at_swim_step_120 (test_rules_p2.Fish.test_turn_by_seed_at_swim_step_120) ... ok
+test_pause_freezes_gameplay_and_resume_runs_same_step (test_rules_p2.Pause.test_pause_freezes_gameplay_and_resume_runs_same_step) ... ok
+test_pause_in_quan (test_rules_p2.Pause.test_pause_in_quan) ... ok
+test_next_free_table_and_schedule (test_rules_p2.QuanV11.test_next_free_table_and_schedule) ... ok
+test_second_stove_b2 (test_rules_p2.QuanV11.test_second_stove_b2) ... ok
+test_contract_v11_standard_numbers (test_rules_p2.StandardData.test_contract_v11_standard_numbers) ... ok
+test_con_01_ticks_zero_and_end_line (test_smoke_p1.Contract.test_con_01_ticks_zero_and_end_line) ... ok
+test_con_02_deterministic_bytes (test_smoke_p1.Contract.test_con_02_deterministic_bytes) ... ok
+test_con_03_bad_input_exit_2 (test_smoke_p1.Contract.test_con_03_bad_input_exit_2) ... ok
+test_con_03_old_and_future_modes_rejected (test_smoke_p1.Contract.test_con_03_old_and_future_modes_rejected) ... ok
+test_gather_snapshot_has_gather_fields (test_smoke_p1.Contract.test_gather_snapshot_has_gather_fields) ... ok
+test_scenario_out_of_domain_exit_2 (test_smoke_p1.Contract.test_scenario_out_of_domain_exit_2) ... ok
+test_inv_01_gather_writes_inventory_quan_reads_it (test_smoke_p1.Integration.test_inv_01_gather_writes_inventory_quan_reads_it)
+Ví dụ smoke test trong PRD-0 mục G: cập bến ở tick 0, quán đọc kho đúng nội dung. ... ok
+test_inv_01_not_written_when_tick_limit_first (test_smoke_p1.Integration.test_inv_01_not_written_when_tick_limit_first) ... ok
+test_inv_bad_schema_exit_2 (test_smoke_p1.Integration.test_inv_bad_schema_exit_2) ... ok
+test_inventory_and_scenario_stock_conflict (test_smoke_p1.Integration.test_inventory_and_scenario_stock_conflict) ... ok
+test_inventory_flags_mode_mismatch_exit_2 (test_smoke_p1.Integration.test_inventory_flags_mode_mismatch_exit_2) ... ok
+test_move_01_swim_speed_after_ramp (test_smoke_p1.Movement.test_move_01_swim_speed_after_ramp)
+Bỏ 6 tick tăng tốc rồi đo 60 tick: quãng ≈ swim_speed × 1 s (±0.1). Ngang, xuống, chéo (không nhanh hơn). ... ok
+test_move_02_heading_positive_is_down (test_smoke_p1.Movement.test_move_02_heading_positive_is_down) ... ok
+test_move_03_edge_clamp (test_smoke_p1.Movement.test_move_03_edge_clamp)
+Chặn từng mép của vùng nước, kể cả d không âm (không bay lên khỏi mặt nước) và đáy d = 30. ... ok
+test_move_mep_vel_ve_0 (test_smoke_p1.Movement.test_move_mep_vel_ve_0) ... ok
+test_move_ramp_doi_huong_trong_tran (test_smoke_p1.Movement.test_move_ramp_doi_huong_trong_tran)
+Đảo từ +speed sang -speed: vận tốc chạm mục tiêu sau tối đa ramp_max_ticks tick kể từ lúc đổi input. ... ok
+test_time_ends_gather_and_keeps_hold (test_smoke_p1.Movement.test_time_ends_gather_and_keeps_hold) ... ok
+test_khoi_sai_mode_exit_2 (test_smoke_p1.ScenarioModes.test_khoi_sai_mode_exit_2) ... ok
+test_quan_fixture_khong_hop_le_exit_2 (test_smoke_p1.ScenarioModes.test_quan_fixture_khong_hop_le_exit_2) ... ok
+test_quan_player_vel_hop_le (test_smoke_p1.ScenarioModes.test_quan_player_vel_hop_le) ... ok
+test_good (test_team_check.TeamCheck.test_good) ... ok
+test_template_is_rejected (test_team_check.TeamCheck.test_template_is_rejected) ... ok
+test_too_few_members (test_team_check.TeamCheck.test_too_few_members) ... ok
+test_wrong_size_duplicate_and_outsider (test_team_check.TeamCheck.test_wrong_size_duplicate_and_outsider) ... ok
+
+----------------------------------------------------------------------
+Ran 98 tests in 12.239s
+
+OK
+## determinism gather: OK (a466cff4059c0281)
+## determinism quan: OK (31272d1e4b79c7c5)
+## integration: kho.json = {"items":{"bong_sung":2,"ca_loc":1}}
+## quan end: {"type":"end","ticks":10800,"sim_tick":10800,"mode":"quan","state":"finished","reason":"time","money":0,"earned":0,"reputation":1.0,"score":100}
+## integration tick-0 stock: {'bong_sung': 2, 'ca_loc': 1} OK
+## day --days 1: {"type":"end","ticks":22200,"sim_tick":22200,"mode":"day","state":"finished","reason":"days_complete","money":0,"earned":0,"reputation":3.0,"score":300,"days_completed":1}
+## day --days 1 thời gian: 0.56 s (yêu cầu <= 20 s)
+## days 2: bought {'upgrade': 'oxygen', 'level': 1, 'price': 200, 'money': 0} | Ngày 2 active {'oxygen': 1} oxygen_max_ticks 2700 | end days_complete 2 OK
+## regression P1: OK
+## RESULT: PASS
