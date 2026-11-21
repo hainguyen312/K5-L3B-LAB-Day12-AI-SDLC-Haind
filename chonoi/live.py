@@ -37,6 +37,7 @@ from .scenario import load_scenario
 WEB_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "web")
 TICK_S = 1.0 / 60.0
 MAX_BODY = 4096
+MAX_BENCH_BODY = 4 * 1024 * 1024  # /bench gửi thời gian từng khung (Ticket-04 benchmark)
 RECENT_EVENTS = 40
 INTRO_S = 4.0
 
@@ -52,6 +53,9 @@ class LiveGame:
         self._lock = threading.Lock()
         self._stop = threading.Event()
         self._thread = None
+        self.bench_result = None
+        self.first_get_ms = None
+        self.shot_png = None
         self._reset()
 
     def _reset(self):
@@ -217,6 +221,8 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         path = self.path.split("?", 1)[0]
+        if self.game.first_get_ms is None and path in ("/", "/index.html"):
+            self.game.first_get_ms = time.time() * 1000  # đo khởi động trình duyệt (benchmark)
         if path == "/state":
             self._send(200, self.game.state_json())
         elif path in ("/", "/index.html"):
@@ -234,7 +240,7 @@ class _Handler(BaseHTTPRequestHandler):
             n = int(self.headers.get("Content-Length") or 0)
         except ValueError:
             n = -1
-        if n < 0 or n > MAX_BODY:
+        if n < 0 or n > (MAX_BENCH_BODY if path in ("/bench", "/shot") else MAX_BODY):
             self._send(400, b'{"error":"body sai"}')
             return
         raw = self.rfile.read(n) if n else b""
@@ -250,6 +256,19 @@ class _Handler(BaseHTTPRequestHandler):
                 self.game.advance_screen()
             elif path == "/quit":
                 self.game.request_quit()
+            elif path == "/bench":
+                body = json.loads(raw.decode("utf-8") or "{}")
+                d = body.get("deltas_ms") if isinstance(body, dict) else None
+                if not (isinstance(d, list) and all(isinstance(x, (int, float)) and x > 0 for x in d)
+                        and isinstance(body.get("load_ms"), (int, float))):
+                    raise ValueError("bench cần deltas_ms (số dương) và load_ms")
+                self.game.bench_result = body
+            elif path == "/shot":
+                body = json.loads(raw.decode("utf-8") or "{}")
+                png = body.get("png") if isinstance(body, dict) else None
+                if not (isinstance(png, str) and png.startswith("data:image/png;base64,")):
+                    raise ValueError("shot cần png dạng data URL")
+                self.game.shot_png = png
             else:
                 self._send(404, b'{"error":"khong co"}')
                 return
