@@ -1,4 +1,32 @@
-# Day 12 — AI SDLC: Quán Ăn Chợ Nổi
+# K5-L3B-LAB-Day12-AI-SDLC-Haind
+
+> **Nhóm Haind** (1 thành viên: [@hainguyen312](https://github.com/hainguyen312)) — xem [`TEAM.md`](TEAM.md).
+> Trạng thái: **Phase 1 (PRD-0) xong** — luật `gather` + `quan` theo Test Contract v1.0, 68 test xanh, bằng chứng ở [`docs/verification/phase-1.md`](docs/verification/phase-1.md).
+
+**Chạy từ clone sạch** (macOS/Linux, chỉ cần Python ≥ 3.9, không cài thêm gì):
+
+```bash
+git clone https://github.com/hainguyen312/K5-L3B-LAB-Day12-AI-SDLC-Haind && cd K5-L3B-LAB-Day12-AI-SDLC-Haind
+python3 -m chonoi.live --mode gather --inventory-out kho.json      # buổi sáng: mở địa chỉ in ra trên trình duyệt
+python3 -m chonoi.live --mode quan --inventory kho.json            # buổi tối: mở quán với kho vừa mang về
+```
+
+- **Điều khiển:** WASD / mũi tên bơi hoặc đi · **E** tương tác (cập bến, hái; ở quán: nấu, lấy món, phục vụ) · **Space** bắt cá · **R** chơi lại.
+- **Điểm:** `earned + 100 × floor(reputation)` (tiền đơn vị nghìn đồng; uy tín 0–5, bắt đầu 3.0).
+- **Test (1 lệnh):** `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
+- **Kiểm chứng + bằng chứng:** `bash .agents/skills/verify-phase/verify.sh 1`
+- **Headless:** `python3 -m chonoi.headless --mode gather|quan --seed 1 --ticks 600 --out out.jsonl` (cờ theo PRD-0 mục B).
+
+## Sáng tạo của nhóm
+
+Phase 1 ưu tiên **làm lõi đúng trước**: chưa có mở rộng sáng tạo nào. Các giả định luật (không phải sáng tạo) ghi ở
+[`docs/clarify.md`](docs/clarify.md). Mở rộng ở phase sau sẽ được liệt kê tại đây và tắt ở headless.
+
+---
+
+## Đề bài gốc
+
+### Day 12 — AI SDLC: Quán Ăn Chợ Nổi
 
 > **Làm theo nhóm 4–6 người** · Dùng AI để xây game 2D qua **4 phase** trong **3 giờ**: Út Sen lặn bắt cá, hái rau trên mặt nước rồi tối mở quán phục vụ khách.
 > **Yêu cầu từng phase mở đúng mốc giờ tại lab board:** **[Chợ Nổi Lab](https://claude.ai/artifact/E35v787wSx2wDgPTNhMVDg)** (cần đăng nhập claude.ai; có trợ giảng AI cho từng phase).
