@@ -47,7 +47,7 @@ class Contract12(unittest.TestCase):
     def test_version_and_freshness_block(self):
         with open("game.contract.json", encoding="utf-8") as f:
             c = json.load(f)
-        self.assertEqual(c["contract_version"], "1.2")
+        self.assertEqual(c["contract_version"], "1.3")  # v1.3 (Ticket-04): gameplay/kho/JSONL giữ nguyên v1.2
         self.assertEqual(FR, {"initial": 100, "gather_decay_per_s": 0.5, "quan_decay_per_s": 0.25, "spoiled_below": 30})
 
 

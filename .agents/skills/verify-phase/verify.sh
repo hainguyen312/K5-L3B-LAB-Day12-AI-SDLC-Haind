@@ -106,6 +106,29 @@ PY
   echo "## regression P2: $(tail -n 1 "$OUT/regression-p2.txt")" >> "$OUT/verify.txt"
 fi
 
+if [ "$PHASE" -ge 4 ]; then
+  # Ticket-04: benchmark có render (cần Chrome/Chromium; không có thì ghi SKIP), soak 10 Ngày x2 (so tính lặp)
+  if python3 -c "from chonoi.bench import find_browser; import sys; sys.exit(0 if find_browser() else 1)"; then
+    python3 -m chonoi.bench --seed 42 --duration 30 --out "$OUT/bench.json" > "$OUT/bench-run.txt" 2>&1 || status=1
+    echo "## bench: $(cat "$OUT/bench.json" 2>/dev/null)" >> "$OUT/verify.txt"
+  else
+    echo "## bench: SKIP (không có Chrome/Chromium trên máy này)" >> "$OUT/verify.txt"
+  fi
+  python3 -m chonoi.soak --seed 7 --days 10 --out "$OUT/soak.json" > /dev/null || status=1
+  python3 -m chonoi.soak --seed 7 --days 10 --out "$TMP/soak2.json" > /dev/null || status=1
+  python3 - "$OUT/soak.json" "$TMP/soak2.json" >> "$OUT/verify.txt" <<'PY' || status=1
+import json, sys
+a, b = (json.load(open(p)) for p in sys.argv[1:3])
+ta, tb = a.pop("duration_s"), b.pop("duration_s")
+ok = a == b and a["days_completed"] == a["days"] == 10 and a["crashes"] == 0
+print(f"## soak 10 Ngày: days_completed={a['days_completed']} crashes={a['crashes']} lặp lại giống nhau={a == b}"
+      f" ({ta}s / {tb}s)", "OK" if ok else "FAIL")
+sys.exit(0 if ok else 1)
+PY
+  PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p3 >> "$OUT/regression-p3.txt" 2>&1 || status=1
+  echo "## regression P3: $(tail -n 1 "$OUT/regression-p3.txt")" >> "$OUT/verify.txt"
+fi
+
 [ $status -eq 0 ] && echo "## RESULT: PASS" >> "$OUT/verify.txt" || echo "## RESULT: FAIL" >> "$OUT/verify.txt"
 tail -n 6 "$OUT/verify.txt"
 exit $status

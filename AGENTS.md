@@ -8,6 +8,8 @@
 - Chơi trên trình duyệt: `python3 -m chonoi.live` (mặc định `--mode day --days 5`; WASD, E, Space, Esc/P, Shop: 1/2/Enter)
 - Test luật của nhóm: `PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p1 tests.test_rules_p2 tests.test_rules_p3 -v`
 - Kiểm chứng + bằng chứng trước khi gắn tag: `bash .agents/skills/verify-phase/verify.sh <N>`
+- Benchmark có render (cần Chrome): `python3 -m chonoi.bench --seed 42 --duration 30 --out bench.json` · Soak: `python3 -m chonoi.soak --seed 7 --days 10 --out soak.json`
+- Ảnh chụp HUD làm bằng chứng: `python3 tools/screenshot.py --mode gather|quan|day [--scenario sc.json] [--query contrast=1] --out a.png`
 
 ## Cấu trúc & quy ước
 - (Starter Python là TÙY CHỌN; nhóm có thể dùng ngôn ngữ khác nếu giữ Test Contract.) Khung do giảng viên cấp: `chonoi/{headless,inputs,scenario,contract,rng,ids,jsonl,inventory,runner,live}.py` và `chonoi/web/`. Hạn chế sửa; nếu phải sửa thì báo cả nhóm và ghi lại lý do.
@@ -38,6 +40,10 @@
 ## Bài học từ Phase 1 (cập nhật theo phase)
 - Agent không đọc được PRD trên lab board → luôn dán nguyên văn phase vào prompt. Phase 1: agent tự đoán 11 luật, 6 luật sai, phải làm lại.
 - Agent hay tự thêm sự kiện/trường ngoài PRD → mọi sự kiện mới phải có trong `docs/contracts/README.md`.
+
+## Bài học từ Phase 4
+- Giao diện cần bằng chứng riêng: chụp ảnh (`tools/screenshot.py`) và XEM ảnh — 2 lỗi hiển thị lộ ra mà test không thấy.
+- Số đo bất thường (load 60 s) → đo từng chặng (`browser_start_ms`) trước khi đổ lỗi cho game.
 
 ## Bài học từ Phase 3
 - Breaking change: viết bảng tác động + thứ tự tích hợp (ADR) trước, chạy đúng ví dụ/smoke của ticket sớm — lỗi làm tròn fresh chỉ lộ ra ở smoke "so chính xác".
