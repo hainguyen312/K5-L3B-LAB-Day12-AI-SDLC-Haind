@@ -1,6 +1,8 @@
 """Test luật Phase 2 của nhóm Haind theo Ticket-02 / Test Contract v1.1 — hộp đen qua headless.
 
 Chạy: PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p2 -v
+
+v1.2 (Ticket-03): fixture giỏ/kho đổi sang cá thể {id, kind, fresh}; `lost` là mảng cá thể; giá món chốt theo độ tươi.
 """
 
 import json
@@ -8,7 +10,7 @@ import math
 import time
 import unittest
 
-from helpers import Workdir, events, frames, read_jsonl, run_headless, snapshots, write_json
+from helpers import Workdir, events, frames, items, kind_counts, kinds, read_jsonl, run_headless, snapshots, stock, write_json
 
 
 def tuning():
@@ -53,7 +55,7 @@ class StandardData(unittest.TestCase):
     def test_contract_v11_standard_numbers(self):
         with open("game.contract.json", encoding="utf-8") as f:
             c = json.load(f)
-        self.assertEqual(c["contract_version"], "1.1")
+        self.assertEqual(c["contract_version"], "1.2")  # v1.2 (Ticket-03) giữ nguyên số chuẩn v1.1
         self.assertEqual([n["id"] for n in G["nodes"]], ["N1", "N2", "N3", "N4", "N5", "N6"])
         self.assertEqual(G["fish_yield"], {"ca_linh": 3, "ca_loc": 1, "ca_keo": 2})
         self.assertEqual(len(T["menu"]), 6)
@@ -179,7 +181,7 @@ class Crocodile(unittest.TestCase):
         self.assertEqual(snapshots(rows)[-1]["monsters"][0]["state"], "patrol", "người chơi lên d < 10 -> patrol")
 
     def test_hit_loses_hp_drops_half_lifo_invuln_recoil(self):
-        hold = ["ca_loc", "bong_sung", "ca_linh", "ca_linh", "ca_keo"]
+        hold = items("ca_loc", "bong_sung", "ca_linh", "ca_linh", "ca_keo")
         sc = {"gather": dict(self.QUIET, hold=hold, player={"pos": [60, 24]},
                              monsters=[croc(state="patrol")])}
         rows, code, err = run("gather", sc, ticks=90)  # bất tử đặt ở tick 1 -> hết ở tick 91
@@ -189,9 +191,9 @@ class Crocodile(unittest.TestCase):
         self.assertEqual(hit[0]["tick"], 1)
         self.assertEqual(hit[0]["data"]["monster_id"], "M1")
         self.assertEqual(hit[0]["data"]["hp"], G["hp_max"] - 1)
-        self.assertEqual(hit[0]["data"]["lost"], ["ca_keo", "ca_linh"])
+        self.assertEqual([(i["id"], i["kind"]) for i in hit[0]["data"]["lost"]], [("I5", "ca_keo"), ("I4", "ca_linh")])
         s1 = snap_at(rows, 1)
-        self.assertEqual(s1["hold"], ["ca_loc", "bong_sung", "ca_linh"])
+        self.assertEqual([i["id"] for i in s1["hold"]], ["I1", "I2", "I3"])
         self.assertEqual(s1["player"]["invuln_ticks"], G["monsters"]["invuln_ticks"])
         m = s1["monsters"][0]
         self.assertEqual((m["state"], m["state_ticks_left"]), ("recoil", 60))
@@ -213,14 +215,15 @@ class Crocodile(unittest.TestCase):
         self.assertEqual(events(run("gather", sc, ticks=1)[0], "monster_hit"), [])
 
     def test_monster_faint_lists_remaining_hold(self):
-        sc = {"gather": dict(self.QUIET, hold=["ca_loc", "bong_sung", "ca_linh"], player={"pos": [60, 24], "hp": 1},
+        sc = {"gather": dict(self.QUIET, hold=items("ca_loc", "bong_sung", "ca_linh"), player={"pos": [60, 24], "hp": 1},
                              monsters=[croc()])}
         rows, code, err = run("gather", sc, ticks=5)
         self.assertEqual(code, 0, err)
         self.assertEqual(names(rows), ["monster_hit", "faint", "gather_end"])
-        self.assertEqual(events(rows, "monster_hit")[0]["data"]["lost"], ["ca_linh"])
-        self.assertEqual(events(rows, "faint")[0]["data"], {"cause": "monster", "lost": ["bong_sung", "ca_loc"], "hp": 0})
-        self.assertEqual(events(rows, "gather_end")[0]["data"]["inventory"], {"items": {}})
+        self.assertEqual([i["id"] for i in events(rows, "monster_hit")[0]["data"]["lost"]], ["I3"])
+        faint = events(rows, "faint")[0]["data"]
+        self.assertEqual((faint["cause"], [i["id"] for i in faint["lost"]], faint["hp"]), ("monster", ["I2", "I1"], 0))
+        self.assertEqual(events(rows, "gather_end")[0]["data"]["inventory"], {"items": []})
 
     def test_bad_monster_fixture_exit_2(self):
         for m in (croc(pos=[60, 5]), croc(state="recoil"), croc(waypoints=[[60, 24]]), croc(kind="ran"),
@@ -233,7 +236,7 @@ class Crocodile(unittest.TestCase):
 class QuanV11(unittest.TestCase):
     def test_next_free_table_and_schedule(self):
         cust = [{"id": "C1", "table_id": "T1", "dish_id": "ca_keo_nuong"}]
-        sc = {"quan": {"stock": {"ca_keo": 6}, "customers": cust}}
+        sc = {"quan": {"stock": stock(ca_keo=6), "customers": cust}}
         rows, code, err = run("quan", sc, ticks=1020, every=10000)
         self.assertEqual(code, 0, err)
         ev = events(rows, "customer_arrived")
@@ -242,14 +245,14 @@ class QuanV11(unittest.TestCase):
 
     def test_second_stove_b2(self):
         cust = [{"id": "C1", "table_id": "T1", "dish_id": "lau_mam"}]
-        stock = {"ca_linh": 2, "ca_keo": 1, "keo_neo": 1, "bong_dien_dien": 1}
-        sc = {"quan": {"stock": stock, "customers": cust, "random_customers": False,
+        stk = stock(ca_linh=2, ca_keo=1, keo_neo=1, bong_dien_dien=1)
+        sc = {"quan": {"stock": stk, "customers": cust, "random_customers": False,
                        "player": {"pos": Q["stoves"][1]["pos"]}}}
         rows, code, err = run("quan", sc, [{"tick": 0, "interact": True}], ticks=1)
         self.assertEqual(code, 0, err)
         ev = events(rows, "cook_started")[0]["data"]
-        self.assertEqual((ev["stove_id"], ev["base_price"]), ("B2", 200))
-        self.assertEqual(ev["items"], ["bong_dien_dien", "ca_keo", "ca_linh", "ca_linh", "keo_neo"])
+        self.assertEqual((ev["stove_id"], ev["base_price"]), ("B2", 199))  # floor(200 × (100 − 1/240) / 100)
+        self.assertEqual(kinds(ev["items"]), ["bong_dien_dien", "ca_keo", "ca_linh", "ca_linh", "keo_neo"])
 
 
 # ----------------------------------------------------------------------------------------------- pause
@@ -268,7 +271,7 @@ class Pause(unittest.TestCase):
         self.assertNotIn("gather_end", names(rows), "cạnh interact trong lúc pause bị bỏ qua")
 
     def test_pause_in_quan(self):
-        rows, code, err = run("quan", {"quan": {"stock": {}}}, [{"tick": 0, "pause": True}], ticks=200, every=1000)
+        rows, code, err = run("quan", {"quan": {"stock": []}}, [{"tick": 0, "pause": True}], ticks=200, every=1000)
         self.assertEqual(code, 0, err)
         self.assertEqual(names(rows), ["paused"], "lịch khách đứng yên khi pause")
         self.assertEqual(rows[-1]["sim_tick"], 0)
@@ -276,7 +279,7 @@ class Pause(unittest.TestCase):
 
 # ----------------------------------------------------------------------------------------------- day
 def dock_day(extra=None, gather=None):
-    sc = {"gather": dict({"hold": ["ca_loc", "bong_sung", "bong_sung"], "random_fish": False}, **(gather or {}))}
+    sc = {"gather": dict({"hold": items("ca_loc", "bong_sung", "bong_sung"), "random_fish": False}, **(gather or {}))}
     if extra:
         sc["day"] = extra
     return sc
@@ -309,10 +312,10 @@ class Day(unittest.TestCase):
         inp = [{"tick": 0, "interact": True}, {"tick": 1, "interact": False},
                {"tick": shop_open, "buy": "oxygen"}, {"tick": shop_open + 1, "buy": "hp"},
                {"tick": shop_open + 2, "shop_done": True}]
-        sc = dock_day({"money": 200, "earned": 200}, {"hold": ["ca_keo", "ca_keo", "ca_loc"]})
+        sc = dock_day({"money": 200, "earned": 200}, {"hold": items("ca_keo", "ca_keo", "ca_loc")})
         rows, code, err = run("day", sc, inp, ticks=shop_open + 4, every=1, extra=("--days", "2"))
         self.assertEqual(code, 0, err)
-        self.assertEqual(snap_at(rows, q_open)["stock"], {"ca_keo": 2, "ca_loc": 1})
+        self.assertEqual(kind_counts(snap_at(rows, q_open)["stock"]), {"ca_keo": 2, "ca_loc": 1})
         arrived = events(rows, "customer_arrived")
         self.assertEqual(arrived[0]["data"]["dish_id"], "ca_loc_nuong_trui", "Ngày 1 chỉ bán món trong kế hoạch")
         self.assertEqual(events(rows, "bought")[0]["data"], {"upgrade": "oxygen", "level": 1, "price": 200, "money": 0})
@@ -322,7 +325,9 @@ class Day(unittest.TestCase):
         self.assertEqual((s["day"], s["phase"], s["upgrades"], s["active_upgrades"]), (2, "gather", {"oxygen": 1}, {"oxygen": 1}))
         self.assertEqual(s["player"]["oxygen_max_ticks"], 2700)
         self.assertEqual(s["player"]["oxygen_ticks"], 2700)
-        self.assertEqual(s["hold"], ["ca_keo", "ca_keo", "ca_loc"], "gather.hold là mẫu khởi tạo mỗi Ngày")
+        self.assertEqual(kinds(s["hold"]), ["ca_keo", "ca_keo", "ca_loc"], "gather.hold là mẫu khởi tạo mỗi Ngày")
+        self.assertEqual([i["id"] for i in s["hold"]], ["I4", "I5", "I6"], "v1.2: Ngày kế cấp id mới theo thứ tự mảng")
+        self.assertEqual([i["fresh"] for i in s["hold"]], [100, 100, 100])
         s_shop = snap_at(rows, shop_open + 1)
         self.assertEqual((s_shop["upgrades"], s_shop["active_upgrades"]), ({"oxygen": 1}, {}))
         self.assertEqual(s_shop["earned"], 200, "mua trừ money, giữ earned")
@@ -343,7 +348,7 @@ class Day(unittest.TestCase):
         rows, code, err = run("day", sc, ticks=3, every=1)
         self.assertEqual(code, 0, err)
         self.assertEqual(names(rows)[3:], ["choke", "faint", "gather_end", "phase_start"])
-        self.assertEqual(snap_at(rows, 1)["stock"], {})
+        self.assertEqual(snap_at(rows, 1)["stock"], [])
 
     def test_three_days_m2_from_day3_and_hp_refill(self):
         day3_start = 1 + QUAN_T + SHOP_T + 22200  # Ngày 1 cập bến ở tick 1; Ngày 2 chạy đủ 22.200 tick
@@ -360,7 +365,7 @@ class Day(unittest.TestCase):
 
     def test_day_scenario_conflicts_exit_2(self):
         bad = [
-            {"quan": {"stock": {"ca_loc": 1}}},
+            {"quan": {"stock": stock(ca_loc=1)}},
             {"quan": {"reputation": 4}},
             {"day": {"money": 300, "earned": 100}},
             {"day": {"money": 100}},
@@ -388,7 +393,7 @@ class Day(unittest.TestCase):
                 code, _ = run_headless(*args, "--seed", "1", "--ticks", "0", "--out", w.path("o.jsonl"))
                 self.assertEqual(code, 2, args)
         with Workdir() as w:
-            inv = write_json(w.path("inv.json"), {"items": {}})
+            inv = write_json(w.path("inv.json"), {"items": []})
             self.assertEqual(run_headless("--mode", "day", "--seed", "1", "--ticks", "0", "--inventory", inv,
                                           "--out", w.path("o.jsonl"))[0], 2)
 

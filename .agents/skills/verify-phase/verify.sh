@@ -30,8 +30,9 @@ for mode in gather quan; do
 done
 
 # Luồng tích hợp gather -> kho -> quan (ví dụ PRD-0 mục G)
-echo '{"gather":{"hold":["ca_loc","bong_sung","bong_sung"]}}' > "$TMP/sc.json"
-echo '{"frames":[{"tick":0,"interact":true}]}' > "$TMP/dock.json"
+# v1.2: giỏ là cá thể {id, kind, fresh}
+echo '{"gather":{"hold":[{"id":"I1","kind":"ca_loc","fresh":100},{"id":"I2","kind":"bong_sung","fresh":100},{"id":"I3","kind":"bong_sung","fresh":100}]}}' > "$TMP/sc.json"
+echo '{"frames":[{"tick":0,"interact":true}]}' > "$TMP/dock.json"  # dùng lại ở smoke bàn giao P3
 python3 -m chonoi.headless --mode gather --seed 42 --ticks 1 --scenario "$TMP/sc.json" --inputs "$TMP/dock.json" \
   --inventory-out "$OUT/kho.json" --out "$OUT/gather-dock.jsonl" || status=1
 python3 -m chonoi.headless --mode quan --seed 42 --ticks 10800 --inventory "$OUT/kho.json" --snapshot-every 600 \
@@ -47,8 +48,9 @@ if [ "$PHASE" -ge 2 ]; then
 import json, sys
 rows = [json.loads(l) for l in open(sys.argv[1])]
 s0 = [r for r in rows if r["type"] == "snapshot"][0]
-ok = s0["tick"] == 0 and s0["stock"] == {"bong_sung": 2, "ca_loc": 1}
-print("## integration tick-0 stock:", s0["stock"], "OK" if ok else "FAIL")
+kho = json.load(open(sys.argv[1].replace("integration-quan.jsonl", "integration-kho.json")))["items"]
+ok = s0["tick"] == 0 and s0["stock"] == kho and sorted(i["kind"] for i in kho) == ["bong_sung", "bong_sung", "ca_loc"]
+print("## integration tick-0 stock == file kho (id/kind/fresh):", "OK" if ok else "FAIL", s0["stock"])
 sys.exit(0 if ok else 1)
 PY
   # smoke day --days 1 (thời gian chạy <= 20 s)
@@ -58,7 +60,7 @@ PY
   echo "## day --days 1: $(tail -n 1 "$OUT/day-1.jsonl")" >> "$OUT/verify.txt"
   echo "## day --days 1 thời gian: $(python3 -c "print(round($t1-$t0,2))") s (yêu cầu <= 20 s)" >> "$OUT/verify.txt"
   # nhiều Ngày: cập bến ngay, mua Bình oxy trong Shop Ngày 1, kiểm cấp áp dụng ở Ngày 2
-  echo '{"day":{"money":200,"earned":200},"gather":{"hold":["ca_loc","bong_sung","bong_sung"],"random_fish":false}}' > "$TMP/d.json"
+  echo '{"day":{"money":200,"earned":200},"gather":{"hold":[{"id":"I1","kind":"ca_loc","fresh":100}],"random_fish":false}}' > "$TMP/d.json"
   echo '{"frames":[{"tick":0,"interact":true},{"tick":1,"interact":false},{"tick":10801,"buy":"oxygen"},{"tick":10802,"shop_done":true}]}' > "$TMP/di.json"
   python3 -m chonoi.headless --mode day --seed 7 --days 2 --scenario "$TMP/d.json" --inputs "$TMP/di.json" --ticks 40000 \
     --snapshot-every 1000 --out "$OUT/days-2-upgrade.jsonl" || status=1
@@ -75,6 +77,33 @@ PY
   # regression P1 với số chuẩn
   PYTHONPATH=tests:. python3 -m unittest tests.test_smoke_p1 tests.test_rules_p1 >> "$OUT/regression-p1.txt" 2>&1 || status=1
   echo "## regression P1: $(tail -n 1 "$OUT/regression-p1.txt")" >> "$OUT/verify.txt"
+fi
+
+if [ "$PHASE" -ge 3 ]; then
+  # Ticket-03: ca kiểm ngưỡng (fresh 30 -> spoiled ở tick 1) và smoke bàn giao file (so chính xác id/kind/fresh)
+  echo '{"gather":{"hold":[{"id":"I1","kind":"ca_linh","fresh":30}],"random_fish":false,"monsters":[]}}' > "$TMP/t30.json"
+  python3 -m chonoi.headless --mode gather --seed 1 --ticks 1 --scenario "$TMP/t30.json" --out "$OUT/threshold-30.jsonl" || status=1
+  echo '{"gather":{"hold":[{"id":"I1","kind":"ca_linh","fresh":100}],"random_fish":false,"monsters":[]}}' > "$TMP/h.json"
+  python3 -m chonoi.headless --mode gather --seed 1 --ticks 5 --scenario "$TMP/h.json" --inputs "$TMP/dock.json" \
+    --inventory-out "$OUT/handover-kho.json" --out "$OUT/handover-gather.jsonl" || status=1
+  python3 -m chonoi.headless --mode quan --seed 1 --ticks 0 --inventory "$OUT/handover-kho.json" --out "$OUT/handover-quan.jsonl" || status=1
+  python3 - "$OUT" >> "$OUT/verify.txt" <<'PY' || status=1
+import json, os, sys
+d = sys.argv[1]
+rd = lambda n: [json.loads(l) for l in open(os.path.join(d, n))]
+sp = [r for r in rd("threshold-30.jsonl") if r["type"] == "event"]
+want = [{"type": "event", "tick": 1, "phase": "gather", "name": "spoiled",
+         "data": {"item_id": "I1", "kind": "ca_linh", "location": "hold"}}]
+ok1 = sp == want
+kho = json.load(open(os.path.join(d, "handover-kho.json")))["items"]
+q0 = [r for r in rd("handover-quan.jsonl") if r["type"] == "snapshot"][0]
+ok2 = q0["stock"] == kho and kho[0]["id"] == "I1" and abs(kho[0]["fresh"] - (100 - 1 / 120)) < 1e-9
+print("## threshold-30: spoiled tick 1", "OK" if ok1 else f"FAIL {sp}")
+print("## handover file -> quan tick 0 khớp chính xác:", "OK" if ok2 else "FAIL", kho)
+sys.exit(0 if ok1 and ok2 else 1)
+PY
+  PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p2 >> "$OUT/regression-p2.txt" 2>&1 || status=1
+  echo "## regression P2: $(tail -n 1 "$OUT/regression-p2.txt")" >> "$OUT/verify.txt"
 fi
 
 [ $status -eq 0 ] && echo "## RESULT: PASS" >> "$OUT/verify.txt" || echo "## RESULT: FAIL" >> "$OUT/verify.txt"

@@ -6,7 +6,7 @@
 - Test: `PYTHONPATH=tests:. python3 -m unittest discover -s tests -v`
 - Headless: `python3 -m chonoi.headless --mode gather|quan|day --seed 1 --ticks 600 --out out.jsonl [--days N]`
 - Chơi trên trình duyệt: `python3 -m chonoi.live` (mặc định `--mode day --days 5`; WASD, E, Space, Esc/P, Shop: 1/2/Enter)
-- Test luật của nhóm: `PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p1 tests.test_rules_p2 -v`
+- Test luật của nhóm: `PYTHONPATH=tests:. python3 -m unittest tests.test_rules_p1 tests.test_rules_p2 tests.test_rules_p3 -v`
 - Kiểm chứng + bằng chứng trước khi gắn tag: `bash .agents/skills/verify-phase/verify.sh <N>`
 
 ## Cấu trúc & quy ước
@@ -16,6 +16,7 @@
 - Hành vi theo giả định có comment `giả định: clarify #n` → đọc `docs/clarify.md` trước khi đổi.
 - Test luật: `tests/test_rules_p1.py` (hộp đen qua headless, dùng `run(mode, block, inputs, ticks)`).
 - **Số liệu chỉ đọc từ `game.contract.json` / dữ liệu**, không hard-code trong luật.
+- v1.2: kho/giỏ là cá thể — mọi thao tác độ tươi đi qua `chonoi/items.py` (`validate`, `decay`, `out`); `fresh` là `Fraction`, KHÔNG dùng float để so ngưỡng hay tính giá. Fixture test dùng `helpers.items()` / `helpers.stock()`.
 - Mọi số ngẫu nhiên đi qua `Streams` (`chonoi/rng.py`); không dùng `random` toàn cục, không dùng đồng hồ hệ thống.
 - Sắp danh sách thực thể bằng `ids.sort_by_id`; cấp id bằng `IdAllocator`.
 
@@ -37,6 +38,10 @@
 ## Bài học từ Phase 1 (cập nhật theo phase)
 - Agent không đọc được PRD trên lab board → luôn dán nguyên văn phase vào prompt. Phase 1: agent tự đoán 11 luật, 6 luật sai, phải làm lại.
 - Agent hay tự thêm sự kiện/trường ngoài PRD → mọi sự kiện mới phải có trong `docs/contracts/README.md`.
+
+## Bài học từ Phase 3
+- Breaking change: viết bảng tác động + thứ tự tích hợp (ADR) trước, chạy đúng ví dụ/smoke của ticket sớm — lỗi làm tròn fresh chỉ lộ ra ở smoke "so chính xác".
+- Khi đổi giá trị kỳ vọng trong test cũ, tính lại bằng công thức của ticket và ghi lý do (CHANGELOG + verification).
 
 ## Bài học từ Phase 2
 - Test agent tự viết cũng sai (đọc snapshot ở tick không ghi, chạy quá thời gian bất tử). Khi test đỏ: đọc lại câu ticket trước, rồi mới quyết sửa luật hay sửa test; sửa test thì ghi lý do.
